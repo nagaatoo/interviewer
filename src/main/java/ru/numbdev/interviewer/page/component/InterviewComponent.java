@@ -43,4 +43,9 @@ public class InterviewComponent extends AbstractInterviewComponent {
         UI.getCurrent().navigate(InterviewsListPage.class);
     }
 
+    @Override
+    public boolean isInterviewer() {
+        return isInterviewer;
+    }
+
 }

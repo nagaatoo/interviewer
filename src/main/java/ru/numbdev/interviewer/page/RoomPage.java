@@ -1,7 +1,9 @@
 package ru.numbdev.interviewer.page;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -24,6 +26,7 @@ import ru.numbdev.interviewer.service.InterviewService;
 import ru.numbdev.interviewer.service.crud.RoomCrudService;
 import ru.numbdev.interviewer.utils.SecurityUtil;
 
+import java.util.List;
 import java.util.UUID;
 
 @Route("/room/:identifier")
@@ -31,7 +34,7 @@ import java.util.UUID;
 @AnonymousAllowed
 public class RoomPage extends VerticalLayout implements BeforeEnterObserver, RoomObserver {
 
-    private Boolean isInterviewer = false;
+    private boolean isInterviewer = false;
     private RoomEntity roomEntity;
 
     private final RoomCrudService roomCrudService;
@@ -72,7 +75,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
         } else if (isInterviewer){
             buildInterviewPage();
         } else {
-            add(main);
+            buildCandidatePage();
         }
     }
 
@@ -82,6 +85,15 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
 
         add(title);
         add(main);
+    }
+
+    private void buildCandidatePage() {
+        buildTitle();
+        buildMain(false);
+
+        add(title);
+        add(main);
+        offerInterview();
     }
 
     private void buildStartPage() {
@@ -128,8 +140,13 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
             buildSplit();
         }
 
+        offerInterview();
+    }
+
+    private void offerInterview() {
         var elements = globalCacheService.offerInterview(roomEntity.getInterview().getId(), this);
         main.setData(elements);
+        main.addCacheToAllElements(getInterviewId(), globalCacheService);
     }
 
     private void buildTitle() {
@@ -221,17 +238,20 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
             buildInterviewPage();
         } else {
             remove(startMain);
-            buildMain(false);
-            add(main);
+            buildCandidatePage();
         }
     }
 
     private void doCreate(ElementValues value) {
-        main.addNewTask(value);
+        if (!isInterviewer) {
+            main.addNewTask(value);
+        }
     }
 
     private void doChange(ElementValues value) {
-        main.changeLastTaskElement(value);
+        if (!isInterviewer) {
+            main.changeLastTaskElement(value);
+        }
     }
 
     private void doFinish() {
@@ -239,7 +259,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
     }
 
     private void doDiff(Message message) {
-
+        main.offerDiff(UUID.fromString(message.value().id()), message.diffs());
     }
 
     @Override

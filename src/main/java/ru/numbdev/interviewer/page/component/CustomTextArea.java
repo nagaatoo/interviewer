@@ -1,21 +1,19 @@
 package ru.numbdev.interviewer.page.component;
 
 import com.vaadin.flow.component.textfield.TextArea;
-import ru.numbdev.interviewer.component.ElementObserver;
-import ru.numbdev.interviewer.dto.ElementValues;
-import ru.numbdev.interviewer.enums.EventType;
+import ru.numbdev.interviewer.page.component.abstracts.EditableComponent;
 
 import java.util.Map;
-import java.util.Optional;
 
-public class CustomTextArea extends TextArea {
+public class CustomTextArea extends TextArea implements EditableComponent {
 
-    public void doAction(EventType type, Map<Integer, ElementValues> value) {
-        setValue(
-                Optional
-                        .ofNullable(value.get(0))
-                        .orElseGet(() -> new ElementValues(null, null, null, null))
-                        .value()
-        );
+    @Override
+    public Map<Integer, String> getDiff(String actualState) {
+        return Map.of(1, actualState);
+    }
+
+    @Override
+    public void offerDiff(Map<Integer, String> diff) {
+        setValue(diff.get(1));
     }
 }

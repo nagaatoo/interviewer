@@ -6,6 +6,7 @@ import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import de.f0rce.ace.AceEditor;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -43,8 +44,11 @@ public class QuestionComponent extends AbstractBuilderListComponent {
         }
 
         questionnaireName.setPlaceholder("Название опросника");
-        questionnaireName.setValue("Новый опросник");
-        questionnaireName.setValue(StringUtils.isNotBlank(questionnaire.getName()) ? questionnaire.getName() : "");
+        questionnaireName.setValue(
+                StringUtils.isNotBlank(questionnaire.getName())
+                        ? questionnaire.getName()
+                        : "Без названия"
+        );
         questionnaireName.addBlurListener(e -> {
             if (StringUtils.isNotBlank(questionnaireName.getValue())) {
                 questionsCrudService.save(questionnaire.setName(questionnaireName.getValue()));
@@ -116,12 +120,17 @@ public class QuestionComponent extends AbstractBuilderListComponent {
     }
 
     private void muteElement(com.vaadin.flow.component.Component component) {
-        if (component instanceof RadioButtonGroup<?> rb) {
+        if (component instanceof CustomRadioButtonsGroup rb) {
             rb.setReadOnly(true);
         }
 
-        if (component instanceof TextArea ta) {
+        if (component instanceof CustomTextArea ta) {
             ta.setReadOnly(true);
+            ta.setEnabled(false);
+        }
+
+        if (component instanceof CustomEditor ee) {
+            ee.setReadOnly(true);
         }
     }
 

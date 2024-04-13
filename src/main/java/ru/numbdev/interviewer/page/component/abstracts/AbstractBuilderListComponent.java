@@ -5,9 +5,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
-import com.vaadin.flow.component.textfield.TextArea;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.numbdev.interviewer.dto.ElementValues;
 import ru.numbdev.interviewer.jpa.entity.BuilderItemEntity;
@@ -15,6 +12,8 @@ import ru.numbdev.interviewer.jpa.entity.ElementType;
 import ru.numbdev.interviewer.jpa.entity.QuestionnaireEntity;
 import ru.numbdev.interviewer.jpa.entity.TemplateEntity;
 import ru.numbdev.interviewer.enums.BuilderType;
+import ru.numbdev.interviewer.page.component.CustomRadioButtonsGroup;
+import ru.numbdev.interviewer.page.component.CustomTextArea;
 import ru.numbdev.interviewer.service.crud.BuilderItemCrudService;
 
 import java.text.MessageFormat;
@@ -81,13 +80,13 @@ public abstract class AbstractBuilderListComponent extends AbstractBuilderCompon
     }
 
     private void saveValueFromRadioButton(BuilderItemEntity entity, Component component) {
-        RadioButtonGroup<String> radioButtonGroup = (RadioButtonGroup<String>) component;
+        var radioButtonGroup = (CustomRadioButtonsGroup) component;
         entity.setElementDescription(radioButtonGroup.getLabel());
         entity.setElementValue(parseValueFromRadioButton(entity.getElementValue(), radioButtonGroup.getValue()));
     }
 
     private void saveValueFromTextArea(BuilderItemEntity entity, Component component) {
-        var area = (TextArea) component;
+        var area = (CustomTextArea) component;
         builderItemCrudService.save(entity.setElementDescription(area.getLabel()).setElementValue(area.getValue()));
     }
 
@@ -106,6 +105,7 @@ public abstract class AbstractBuilderListComponent extends AbstractBuilderCompon
                 .toList();
     }
 
+    @SuppressWarnings("all")
     protected ElementValues getElementValue(String id) {
         return items
                 .stream()

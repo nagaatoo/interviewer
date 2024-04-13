@@ -116,7 +116,17 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
         }
     }
 
+    public void offerDiff(UUID elementId, Map<Integer, String> diff) {
+        components
+                .stream()
+                .filter(e -> UUID.fromString(e.getId().get()).equals(elementId))
+                .findFirst()
+                .ifPresent(e -> ((EditableComponent) e).offerDiff(diff));
+    }
+
     protected abstract void finish();
+
+    public abstract boolean isInterviewer();
 
     public void setData(Map<Integer, ElementValues> data) {
         if (CollectionUtils.isEmpty(data)) {
@@ -131,9 +141,12 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
                 .map(es -> buildElement(es.getValue()))
                 .forEach(components::add);
 
-        currentIdx = components.size() <= 1 ? 0 : components.size();
+        currentIdx = components.size() <= 1 ? 0 : components.size() - 1;
         currentTaskComponent.changeTask(components.get(currentIdx));
-        nextButton.setEnabled(true);
+
+        if (isInterviewer()) {
+            previewButton.setEnabled(true);
+        }
     }
 
     public void addNewTask(ElementValues value) {
@@ -179,79 +192,55 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
         return components.get(currentIdx);
     }
 
-    // Потому, что по другому не придумал
-    // TODO сделать интерфейс для смены состояний
     public void addCacheToCurrentElement(UUID interviewId, GlobalCacheService service) {
-        var component = getCurrentElement();
+        addCacheToTargetComponent(interviewId, getCurrentElement(), service);
+    }
+
+    public void addCacheToAllElements(UUID interviewId, GlobalCacheService service) {
+        components.forEach(e -> addCacheToTargetComponent(interviewId, e, service));
+    }
+
+    // Потому, что по другому не придумал
+    private void addCacheToTargetComponent(UUID interviewId, Component component, GlobalCacheService service) {
         switch (component) {
             case CustomEditor e -> registerListenerForEditor(interviewId, e, service);
             case CustomRadioButtonsGroup rb -> registerListenerForRadioButtons(interviewId, rb, service);
             case CustomTextArea ta -> registerListenerForTextArea(interviewId, ta, service);
             case null, default -> System.out.println("Unknown element type");
-        };
+        }
     }
 
     private void registerListenerForEditor(UUID interviewId, CustomEditor editor, GlobalCacheService service) {
         editor.addAceChangedListener(e ->
                 service.offerDiff(
                         interviewId,
-                        UUID.fromString(editor.getId().get()),
+                        editor.getIdAsUUID(),
                         editor.getDiff(e.getValue())
                 )
         );
     }
 
     private void registerListenerForRadioButtons(UUID interviewId,  CustomRadioButtonsGroup group, GlobalCacheService service) {
-        group.addValueChangeListener(e ->
+        group.addValueChangeListener(e -> {
+            if (e.isFromClient()) {
                 service.offerDiff(
                         interviewId,
-                        UUID.fromString(group.getId().get()),
-                        Map.of(1, String.valueOf(group.getValue()))
-                )
-        );
+                        group.getIdAsUUID(),
+                        group.getDiff(e.getValue())
+                );
+            }
+        });
     }
 
     private void registerListenerForTextArea(UUID interviewId, CustomTextArea textArea, GlobalCacheService service) {
         textArea.addValueChangeListener(e ->
                 service.offerDiff(
                         interviewId,
-                        UUID.fromString(textArea.getId().get()),
-                        Map.of(1, String.valueOf(textArea.getValue()))
+                        textArea.getIdAsUUID(),
+                        textArea.getDiff(e.getValue())
                 )
         );
     }
-
-//    @Override
-//    public void doAction(EventType type, ElementValues value) {
-//        // TODO сделать интерфейс для смены состояний
-//        changeStateElement(
-//                getComponentById(UUID.fromString(value.id())),
-//                type,
-//                value
-//        );
-//    }
-//
-//    // TODO сделать интерфейс для смены состояний
-//    private void changeStateElement(Component component, EventType type, ElementValues value) {
-//        switch (component) {
-//            case CustomEditor e -> changeStateForEditor(e, type, value);
-//            case RadioButtonGroup rb -> chageStateForRadioButtons(rb, type, value);
-//            case TextArea ta -> changeStateForTextArea(ta, type, value);
-//            case null, default -> System.out.println("Unknown element");
-//        }
-//    }
-//
-//    private void changeStateForTextArea(TextArea ta, EventType type, ElementValues value) {
-//
-//    }
-//
-//    private void chageStateForRadioButtons(RadioButtonGroup rb, EventType type, ElementValues value) {
-//
-//    }
-//
-//    private void changeStateForEditor(CustomEditor e, EventType type, ElementValues value) {
-//        e.changeState(value.value());
-//    }
 
     private Component getComponentById(UUID componentId) {
         return components

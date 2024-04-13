@@ -1,6 +1,7 @@
 package ru.numbdev.interviewer.page.component;
 
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
@@ -66,8 +67,12 @@ public class TemplateComponent extends AbstractBuilderListComponent {
         }
 
         templateName.setPlaceholder("Название шаблона");
-        templateName.setValue("Новый шаблон");
-        templateName.setValue(StringUtils.isNotBlank(template.getName()) ? template.getName() : "");
+        templateName.setValue(
+                StringUtils.isNotBlank(template.getName())
+                        ? template.getName()
+                        : "Без названия"
+        );
+
         templateName.addBlurListener(e -> {
             if (StringUtils.isNotBlank(templateName.getValue())) {
                 templateCrudService.save(template.setName(templateName.getValue()));
@@ -149,16 +154,16 @@ public class TemplateComponent extends AbstractBuilderListComponent {
     }
 
     private void muteElement(com.vaadin.flow.component.Component component) {
-        if (component instanceof RadioButtonGroup<?> rb) {
+        if (component instanceof CustomRadioButtonsGroup rb) {
             rb.setReadOnly(true);
         }
 
-        if (component instanceof TextArea ta) {
+        if (component instanceof CustomTextArea ta) {
             ta.setReadOnly(true);
-            ta.setEnabled(false);
+//            ta.setEnabled(false);
         }
 
-        if (component instanceof AceEditor ee) {
+        if (component instanceof CustomEditor ee) {
             ee.setReadOnly(true);
         }
     }

@@ -2,10 +2,7 @@ package ru.numbdev.interviewer.page.component.abstracts;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.radiobutton.RadioGroupVariant;
-import com.vaadin.flow.component.textfield.TextArea;
-import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +26,7 @@ public abstract class AbstractBuilderComponent extends VerticalLayout {
         };
     }
 
-    private ElementValues valueFromTextArea(TextArea ta) {
+    private ElementValues valueFromTextArea(CustomTextArea ta) {
         return new ElementValues(
                 ta.getId().get(),
                 ElementType.TEXT,
@@ -38,7 +35,7 @@ public abstract class AbstractBuilderComponent extends VerticalLayout {
         );
     }
 
-    private ElementValues valueFromRadioButton(RadioButtonGroup<String> rb) {
+    private ElementValues valueFromRadioButton(CustomRadioButtonsGroup rb) {
         return new ElementValues(
                 rb.getId().get(),
                 ElementType.QUESTION,
@@ -47,7 +44,7 @@ public abstract class AbstractBuilderComponent extends VerticalLayout {
         );
     }
 
-    private ElementValues valueFromCodeEditor(AceEditor te) {
+    private ElementValues valueFromCodeEditor(CustomEditor te) {
         return new ElementValues(
                 te.getId().get(),
                 ElementType.CODE,

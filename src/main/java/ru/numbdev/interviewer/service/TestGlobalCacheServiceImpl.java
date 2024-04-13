@@ -45,15 +45,13 @@ public class TestGlobalCacheServiceImpl implements GlobalCacheService {
     public Map<Integer, ElementValues> offerInterview(UUID interviewId, RoomObserver room) {
         try {
             offerInterviewLock.lock();
-            var component = (Component) room;
-            var roomComponentId = UUID.fromString(component.getId().get());
             if (!sessions.containsKey(interviewId)) {
                 sessions.put(interviewId, new HashMap<>());
             }
 
             if (UI.getCurrent() != null) {
                 var roomIdsWithSessions = sessions.get(interviewId);
-                roomIdsWithSessions.put(roomComponentId, UI.getCurrent().getSession());
+                roomIdsWithSessions.put(room.getIdAsUUID(), UI.getCurrent().getSession());
             }
 
             observerRooms.add(room);
@@ -169,10 +167,10 @@ public class TestGlobalCacheServiceImpl implements GlobalCacheService {
         if (sessionRooms != null) {
             observerRooms
                     .stream()
-                    .filter(e -> sessionRooms.containsKey(UUID.fromString(((Component) e).getId().get())))
+                    .filter(e -> sessionRooms.containsKey(e.getIdAsUUID()))
                     .forEach(e ->
                             sessionRooms
-                                    .get(UUID.fromString(((Component) e).getId().get()))
+                                    .get(e.getIdAsUUID())
                                     .access(() -> e.doAction(message))
                     );
         }
