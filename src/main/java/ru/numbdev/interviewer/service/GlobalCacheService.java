@@ -1,12 +1,9 @@
 package ru.numbdev.interviewer.service;
 
-import ru.numbdev.interviewer.component.ElementObserver;
 import ru.numbdev.interviewer.component.RoomObserver;
 import ru.numbdev.interviewer.dto.ElementValues;
 import ru.numbdev.interviewer.enums.EventType;
 
-import java.sql.Timestamp;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 

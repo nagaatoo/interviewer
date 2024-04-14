@@ -7,7 +7,6 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.context.ApplicationContext;
-import ru.numbdev.interviewer.jpa.entity.TemplateEntity;
 import ru.numbdev.interviewer.page.component.TemplateComponent;
 
 import java.util.UUID;

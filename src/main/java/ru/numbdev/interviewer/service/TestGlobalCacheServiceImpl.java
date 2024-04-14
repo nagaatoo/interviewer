@@ -1,7 +1,6 @@
 package ru.numbdev.interviewer.service;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinSession;
 import lombok.RequiredArgsConstructor;

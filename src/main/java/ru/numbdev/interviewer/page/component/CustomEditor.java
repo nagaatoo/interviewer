@@ -2,9 +2,6 @@ package ru.numbdev.interviewer.page.component;
 
 import de.f0rce.ace.AceEditor;
 import org.apache.commons.lang3.StringUtils;
-import ru.numbdev.interviewer.component.ElementObserver;
-import ru.numbdev.interviewer.dto.ElementValues;
-import ru.numbdev.interviewer.enums.EventType;
 import ru.numbdev.interviewer.page.component.abstracts.EditableComponent;
 
 import java.util.Arrays;

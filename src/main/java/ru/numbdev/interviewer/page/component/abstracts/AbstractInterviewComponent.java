@@ -10,15 +10,12 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import lombok.Getter;
 import org.springframework.util.CollectionUtils;
 import ru.numbdev.interviewer.dto.ElementValues;
-import ru.numbdev.interviewer.enums.EventType;
 import ru.numbdev.interviewer.page.component.CurrentTaskComponent;
 import ru.numbdev.interviewer.page.component.CustomEditor;
 import ru.numbdev.interviewer.page.component.CustomRadioButtonsGroup;
 import ru.numbdev.interviewer.page.component.CustomTextArea;
 import ru.numbdev.interviewer.service.GlobalCacheService;
 
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.*;
 
 public abstract class AbstractInterviewComponent extends AbstractBuilderComponent {

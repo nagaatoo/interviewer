@@ -1,6 +1,5 @@
 package ru.numbdev.interviewer.jpa.criteria;
 
-import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;

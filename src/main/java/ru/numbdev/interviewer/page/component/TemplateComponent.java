@@ -1,15 +1,9 @@
 package ru.numbdev.interviewer.page.component;
 
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
-import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
-import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
-import de.f0rce.ace.AceEditor;
-import de.f0rce.ace.enums.AceMode;
-import de.f0rce.ace.util.AceMarker;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;

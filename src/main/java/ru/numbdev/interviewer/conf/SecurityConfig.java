@@ -1,6 +1,5 @@
 package ru.numbdev.interviewer.conf;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;

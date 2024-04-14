@@ -5,9 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.numbdev.interviewer.jpa.criteria.QuestionSpecification;
-import ru.numbdev.interviewer.jpa.criteria.TemplateSpecification;
 import ru.numbdev.interviewer.jpa.entity.QuestionnaireEntity;
-import ru.numbdev.interviewer.jpa.entity.TemplateEntity;
 import ru.numbdev.interviewer.jpa.repository.QuestionnaireRepository;
 import ru.numbdev.interviewer.utils.SecurityUtil;
 
