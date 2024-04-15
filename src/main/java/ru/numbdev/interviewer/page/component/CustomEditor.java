@@ -23,21 +23,19 @@ public class CustomEditor extends AceEditor implements EditableComponent {
         try {
             lock.lock();
             var seq = new AtomicInteger();
-            var result = Arrays
+            return Arrays
                     .stream(actualState.split("\r\n"))
                     .collect(
                             Collectors.toConcurrentMap(
                                     e -> seq.incrementAndGet(),
                                     e -> e
                             )
-                    );
-
-            return result
+                    )
                     .entrySet()
                     .stream()
                     .filter(es -> {
                         var row = rows.get(es.getKey());
-                        return StringUtils.isBlank(row) || (StringUtils.isNotBlank(row) && es.getValue().equals(row));
+                        return StringUtils.isBlank(row) || (StringUtils.isNotBlank(row) && !es.getValue().equals(row));
                     })
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         } finally {
@@ -60,9 +58,10 @@ public class CustomEditor extends AceEditor implements EditableComponent {
         diff
                 .forEach((rowIdx, value) -> {
                     // не меняем текущую строку
-                    if (getCursorPosition().getRow() != rowIdx) {
-                        rows.put(rowIdx, value);
-                    }
+//                    if (getCursorPosition().getRow() != rowIdx) {
+//                        rows.put(rowIdx, value);
+//                    }
+                    rows.put(rowIdx, value);
                 });
     }
 

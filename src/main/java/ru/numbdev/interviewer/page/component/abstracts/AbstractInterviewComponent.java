@@ -208,16 +208,20 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
     }
 
     private void registerListenerForEditor(UUID interviewId, CustomEditor editor, GlobalCacheService service) {
-        editor.addAceChangedListener(e ->
-                service.offerDiff(
-                        interviewId,
-                        editor.getIdAsUUID(),
-                        editor.getDiff(e.getValue())
-                )
+        editor.addValueChangeListener(e -> System.out.println("sdfsdf"));
+        editor.addAceChangedListener(e -> {
+                    if (e.isFromClient()) {
+                        service.offerDiff(
+                                interviewId,
+                                editor.getIdAsUUID(),
+                                editor.getDiff(e.getValue())
+                        );
+                    }
+                }
         );
     }
 
-    private void registerListenerForRadioButtons(UUID interviewId,  CustomRadioButtonsGroup group, GlobalCacheService service) {
+    private void registerListenerForRadioButtons(UUID interviewId, CustomRadioButtonsGroup group, GlobalCacheService service) {
         group.addValueChangeListener(e -> {
             if (e.isFromClient()) {
                 service.offerDiff(
@@ -230,12 +234,15 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
     }
 
     private void registerListenerForTextArea(UUID interviewId, CustomTextArea textArea, GlobalCacheService service) {
-        textArea.addValueChangeListener(e ->
-                service.offerDiff(
-                        interviewId,
-                        textArea.getIdAsUUID(),
-                        textArea.getDiff(e.getValue())
-                )
+        textArea.addValueChangeListener(e -> {
+                    if (e.isFromClient()) {
+                        service.offerDiff(
+                                interviewId,
+                                textArea.getIdAsUUID(),
+                                textArea.getDiff(e.getValue())
+                        );
+                    }
+                }
         );
     }
 
