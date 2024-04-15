@@ -24,7 +24,6 @@ import ru.numbdev.interviewer.service.InterviewService;
 import ru.numbdev.interviewer.service.crud.RoomCrudService;
 import ru.numbdev.interviewer.utils.SecurityUtil;
 
-import java.util.List;
 import java.util.UUID;
 
 @Route("/room/:identifier")
