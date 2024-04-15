@@ -85,12 +85,25 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
         add(main);
     }
 
+    private void buildInterviewPage() {
+        buildTitle();
+        buildMain(false);
+
+        add(title);
+        buildSplit();
+
+        offerInterview();
+    }
+
     private void buildCandidatePage() {
         buildTitle();
         buildMain(false);
 
         add(title);
         add(main);
+        main.setSizeFull();
+        setSizeFull();
+
         offerInterview();
     }
 
@@ -125,20 +138,6 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
 
     private void startInterview() {
         interviewService.startInterview(roomEntity.getInterview().getId());
-    }
-
-    private void buildInterviewPage() {
-        buildTitle();
-        buildMain(false);
-
-        add(title);
-        if (SecurityUtil.isAnonymous()) {
-            add(main);
-        } else {
-            buildSplit();
-        }
-
-        offerInterview();
     }
 
     private void offerInterview() {
