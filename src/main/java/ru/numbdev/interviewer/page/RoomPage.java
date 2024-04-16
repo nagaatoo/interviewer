@@ -142,7 +142,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
     private void offerInterview() {
         var elements = globalCacheService.offerInterview(roomEntity.getInterview().getId(), this);
         main.setData(elements);
-        main.addCacheToAllElements(getInterviewId(), globalCacheService);
+        main.addCacheToAllElements();
     }
 
     private void buildTitle() {
@@ -153,6 +153,10 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
     private void buildMain(boolean isReadOnly) {
         main = context.getBean(InterviewComponent.class);
         main.init(isInterviewer, isReadOnly);
+
+        if (!isReadOnly) {
+            main.enableCacheOperations(getInterviewId(), globalCacheService);
+        }
     }
 
     private void buildSplit() {
@@ -174,7 +178,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
                 var element = templateComponent.getSelectedElement();
                 if (element != null) {
                     main.addTaskElement(element);
-                    main.addCacheToCurrentElement(getInterviewId(), globalCacheService);
+                    main.addCacheToCurrentElement();
                 }
 
                 globalCacheService.offerComponent(getInterviewId(), element, false);
@@ -187,7 +191,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
                 }
 
                 globalCacheService.offerComponent(getInterviewId(), element, true);
-                main.addCacheToCurrentElement(getInterviewId(), globalCacheService);
+                main.addCacheToCurrentElement();
             });
             var buttonLayout = new HorizontalLayout();
             buttonLayout.add(addButton, changeButton);
@@ -223,6 +227,8 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
             case FINISH_INTERVIEW -> doFinish();
             case ADD_COMPONENT  -> doCreate(message.value());
             case CHANGE_LAST_COMPONENT -> doChange(message.value());
+            case NEXT_COMPONENT -> doNext();
+            case PREVIOUS_COMPONENT -> doPreview();
             case DO_DIFF -> doDiff(message);
             case null, default -> System.out.println("Unknown type");
         }
@@ -248,6 +254,14 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
         if (!isInterviewer) {
             main.changeLastTaskElement(value);
         }
+    }
+
+    private void doNext() {
+        main.doNext();
+    }
+
+    private void doPreview() {
+        main.doPreview();
     }
 
     private void doFinish() {

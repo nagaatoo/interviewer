@@ -10,6 +10,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import lombok.Getter;
 import org.springframework.util.CollectionUtils;
 import ru.numbdev.interviewer.dto.ElementValues;
+import ru.numbdev.interviewer.enums.EventType;
 import ru.numbdev.interviewer.page.component.CurrentTaskComponent;
 import ru.numbdev.interviewer.page.component.CustomEditor;
 import ru.numbdev.interviewer.page.component.CustomRadioButtonsGroup;
@@ -29,6 +30,14 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
 
     @Getter
     private int currentIdx = 0;
+
+    private UUID interviewerId;
+    private GlobalCacheService globalCacheService;
+
+    public void enableCacheOperations(UUID interviewId, GlobalCacheService globalCacheService) {
+        this.globalCacheService = globalCacheService;
+        this.interviewerId = interviewId;
+    }
 
     protected void initCurrentOnly(String msg) {
         currentTaskComponent = new CurrentTaskComponent(msg);
@@ -93,6 +102,10 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
             if (components.size() == currentIdx + 1) {
                 nextButton.setEnabled(false);
             }
+
+            if (globalCacheService != null) {
+                globalCacheService.offerEvent(interviewerId, EventType.NEXT_COMPONENT);
+            }
         });
         previewButton.addClickListener(e -> {
             if (components.size() == currentIdx + 1) {
@@ -104,6 +117,11 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
 
             if (currentIdx == 0) {
                 previewButton.setEnabled(false);
+            }
+
+
+            if (globalCacheService != null) {
+                globalCacheService.offerEvent(interviewerId, EventType.PREVIOUS_COMPONENT);
             }
         });
 
@@ -189,30 +207,46 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
         return components.get(currentIdx);
     }
 
-    public void addCacheToCurrentElement(UUID interviewId, GlobalCacheService service) {
-        addCacheToTargetComponent(interviewId, getCurrentElement(), service);
+    public void addCacheToCurrentElement() {
+        addCacheToTargetComponent(getCurrentElement());
     }
 
-    public void addCacheToAllElements(UUID interviewId, GlobalCacheService service) {
-        components.forEach(e -> addCacheToTargetComponent(interviewId, e, service));
+    public void addCacheToAllElements() {
+        components.forEach(this::addCacheToTargetComponent);
     }
 
-    // Потому, что по другому не придумал
-    private void addCacheToTargetComponent(UUID interviewId, Component component, GlobalCacheService service) {
+    public void doNext() {
+        if (isInterviewer()) {
+            nextButton.click();
+        } else {
+            currentIdx += 1;
+            currentTaskComponent.changeTask(components.get(currentIdx));
+        }
+    }
+
+    public void doPreview() {
+        if (isInterviewer()) {
+            previewButton.click();
+        } else {
+            currentIdx -= 1;
+            currentTaskComponent.changeTask(components.get(currentIdx));
+        }
+    }
+
+    private void addCacheToTargetComponent(Component component) {
         switch (component) {
-            case CustomEditor e -> registerListenerForEditor(interviewId, e, service);
-            case CustomRadioButtonsGroup rb -> registerListenerForRadioButtons(interviewId, rb, service);
-            case CustomTextArea ta -> registerListenerForTextArea(interviewId, ta, service);
+            case CustomEditor e -> registerListenerForEditor(e);
+            case CustomRadioButtonsGroup rb -> registerListenerForRadioButtons(rb);
+            case CustomTextArea ta -> registerListenerForTextArea(ta);
             case null, default -> System.out.println("Unknown element type");
         }
     }
 
-    private void registerListenerForEditor(UUID interviewId, CustomEditor editor, GlobalCacheService service) {
-        editor.addValueChangeListener(e -> System.out.println("sdfsdf"));
+    private void registerListenerForEditor(CustomEditor editor) {
         editor.addAceChangedListener(e -> {
-                    if (e.isFromClient()) {
-                        service.offerDiff(
-                                interviewId,
+                    if (e.isFromClient() && globalCacheService != null) {
+                        globalCacheService.offerDiff(
+                                interviewerId,
                                 editor.getIdAsUUID(),
                                 editor.getDiff(e.getValue())
                         );
@@ -221,11 +255,11 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
         );
     }
 
-    private void registerListenerForRadioButtons(UUID interviewId, CustomRadioButtonsGroup group, GlobalCacheService service) {
+    private void registerListenerForRadioButtons(CustomRadioButtonsGroup group) {
         group.addValueChangeListener(e -> {
-            if (e.isFromClient()) {
-                service.offerDiff(
-                        interviewId,
+            if (e.isFromClient() && globalCacheService != null) {
+                globalCacheService.offerDiff(
+                        interviewerId,
                         group.getIdAsUUID(),
                         group.getDiff(e.getValue())
                 );
@@ -233,11 +267,11 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
         });
     }
 
-    private void registerListenerForTextArea(UUID interviewId, CustomTextArea textArea, GlobalCacheService service) {
+    private void registerListenerForTextArea(CustomTextArea textArea) {
         textArea.addValueChangeListener(e -> {
-                    if (e.isFromClient()) {
-                        service.offerDiff(
-                                interviewId,
+                    if (e.isFromClient() && globalCacheService != null) {
+                        globalCacheService.offerDiff(
+                                interviewerId,
                                 textArea.getIdAsUUID(),
                                 textArea.getDiff(e.getValue())
                         );
