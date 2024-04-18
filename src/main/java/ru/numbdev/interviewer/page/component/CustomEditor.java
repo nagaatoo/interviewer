@@ -4,6 +4,7 @@ import de.f0rce.ace.AceEditor;
 import org.apache.commons.lang3.StringUtils;
 import ru.numbdev.interviewer.page.component.abstracts.EditableComponent;
 
+import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,21 +24,47 @@ public class CustomEditor extends AceEditor implements EditableComponent {
         try {
             lock.lock();
             var seq = new AtomicInteger();
-            return Arrays
+            var actualRows = Arrays
                     .stream(actualState.split("\r\n"))
                     .collect(
                             Collectors.toConcurrentMap(
                                     e -> seq.incrementAndGet(),
                                     e -> e
                             )
-                    )
-                    .entrySet()
-                    .stream()
-                    .filter(es -> {
-                        var row = rows.get(es.getKey());
-                        return StringUtils.isBlank(row) || (StringUtils.isNotBlank(row) && !es.getValue().equals(row));
-                    })
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                    );
+            if (actualState.endsWith("\r\n")) {
+                actualRows.put(actualRows.size() + 1, "");
+            }
+
+            if (actualRows.size() >= rows.size()) {
+                var diff = actualRows
+                        .entrySet()
+                        .stream()
+                        .filter(es -> {
+                            var row = rows.get(es.getKey());
+                            return row == null || !es.getValue().equals(row);
+                        })
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                rows.putAll(diff);
+                return diff;
+            } else {
+                var diff = rows
+                        .entrySet()
+                        .stream()
+                        .filter(es -> {
+                            var row = actualRows.get(es.getKey());
+                            return row != null && !row.equals(es.getValue());
+                        })
+                        .map(es -> {
+                            var row = actualRows.get(es.getKey());
+                            return row == null
+                                    ? new AbstractMap.SimpleEntry<Integer, String>(es.getKey(), null)
+                                    : es;
+                        })
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                rows.putAll(diff);
+                return diff;
+            }
         } finally {
             lock.unlock();
         }
@@ -57,16 +84,20 @@ public class CustomEditor extends AceEditor implements EditableComponent {
     private void saveResult(Map<Integer, String> diff) {
         diff
                 .forEach((rowIdx, value) -> {
-                    // не меняем текущую строку
-//                    if (getCursorPosition().getRow() != rowIdx) {
-//                        rows.put(rowIdx, value);
-//                    }
-                    rows.put(rowIdx, value);
+                    if (value == null) {
+                        rows.remove(rowIdx);
+                    } else {
+                        rows.put(rowIdx, value);
+                    }
                 });
     }
 
     private void addToComponent() {
+        var currentRow = getCursorPosition().getRow();
+        var currentCol = getCursorPosition().getColumn();
+
         setValue(String.join(SPLIT, rows.values()));
+        setCursorPosition(currentRow, currentCol, true);
     }
 
 }

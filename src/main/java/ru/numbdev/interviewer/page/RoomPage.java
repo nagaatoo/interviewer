@@ -119,7 +119,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
 //                remove(startMain);
 //                buildInterviewPage();
 //                startInterview();
-                globalCacheService.offerEvent(roomEntity.getInterview().getId(), EventType.START_INTERVIEW);
+                globalCacheService.offerEvent(roomEntity.getInterview().getId(), getIdAsUUID(), EventType.START_INTERVIEW);
 
             });
             startMain.add(startButton);
@@ -155,7 +155,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
         main.init(isInterviewer, isReadOnly);
 
         if (!isReadOnly) {
-            main.enableCacheOperations(getInterviewId(), globalCacheService);
+            main.enableCacheOperations(getInterviewId(), getIdAsUUID(), globalCacheService);
         }
     }
 
@@ -181,7 +181,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
                     main.addCacheToCurrentElement();
                 }
 
-                globalCacheService.offerComponent(getInterviewId(), element, false);
+                globalCacheService.offerComponent(getInterviewId(), getIdAsUUID(), element, false);
             });
             var changeButton = new Button("Заменить текущую");
             changeButton.addClickListener(e -> {
@@ -190,7 +190,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
                     main.changeLastTaskElement(element);
                 }
 
-                globalCacheService.offerComponent(getInterviewId(), element, true);
+                globalCacheService.offerComponent(getInterviewId(), getIdAsUUID(), element, true);
                 main.addCacheToCurrentElement();
             });
             var buttonLayout = new HorizontalLayout();
@@ -222,6 +222,10 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
 
     @Override
     public void doAction(Message message) {
+        if (message.roomId().equals(getIdAsUUID())) {
+            return;
+        }
+
         switch (message.event()) {
             case START_INTERVIEW -> doStart();
             case FINISH_INTERVIEW -> doFinish();

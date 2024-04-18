@@ -32,11 +32,13 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
     private int currentIdx = 0;
 
     private UUID interviewerId;
+    private UUID roomId;
     private GlobalCacheService globalCacheService;
 
-    public void enableCacheOperations(UUID interviewId, GlobalCacheService globalCacheService) {
+    public void enableCacheOperations(UUID interviewId, UUID roomId, GlobalCacheService globalCacheService) {
         this.globalCacheService = globalCacheService;
         this.interviewerId = interviewId;
+        this.roomId = roomId;
     }
 
     protected void initCurrentOnly(String msg) {
@@ -104,7 +106,7 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
             }
 
             if (globalCacheService != null) {
-                globalCacheService.offerEvent(interviewerId, EventType.NEXT_COMPONENT);
+                globalCacheService.offerEvent(interviewerId, roomId, EventType.NEXT_COMPONENT);
             }
         });
         previewButton.addClickListener(e -> {
@@ -121,7 +123,7 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
 
 
             if (globalCacheService != null) {
-                globalCacheService.offerEvent(interviewerId, EventType.PREVIOUS_COMPONENT);
+                globalCacheService.offerEvent(interviewerId, roomId, EventType.PREVIOUS_COMPONENT);
             }
         });
 
@@ -243,10 +245,12 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
     }
 
     private void registerListenerForEditor(CustomEditor editor) {
+//        editor.addValueChangeListener(e -> System.out.println("sadfasda"));
         editor.addAceChangedListener(e -> {
                     if (e.isFromClient() && globalCacheService != null) {
                         globalCacheService.offerDiff(
                                 interviewerId,
+                                roomId,
                                 editor.getIdAsUUID(),
                                 editor.getDiff(e.getValue())
                         );
@@ -260,6 +264,7 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
             if (e.isFromClient() && globalCacheService != null) {
                 globalCacheService.offerDiff(
                         interviewerId,
+                        roomId,
                         group.getIdAsUUID(),
                         group.getDiff(e.getValue())
                 );
@@ -272,6 +277,7 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
                     if (e.isFromClient() && globalCacheService != null) {
                         globalCacheService.offerDiff(
                                 interviewerId,
+                                roomId,
                                 textArea.getIdAsUUID(),
                                 textArea.getDiff(e.getValue())
                         );

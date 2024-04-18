@@ -10,8 +10,8 @@ import java.util.UUID;
 public interface GlobalCacheService {
 
     Map<Integer, ElementValues> offerInterview(UUID interviewId, RoomObserver room);
-    void offerEvent(UUID interviewId, EventType type);
-    void offerComponent(UUID interviewId, ElementValues value, boolean isChange);
-    void offerDiff(UUID interviewId, UUID elementId, Map<Integer, String> diffs);
+    void offerEvent(UUID interviewId, UUID roomId, EventType type);
+    void offerComponent(UUID interviewId, UUID roomId, ElementValues value, boolean isChange);
+    void offerDiff(UUID interviewId, UUID roomId, UUID elementId, Map<Integer, String> diffs);
 
 }

@@ -43,6 +43,7 @@ public class TestGlobalCacheServiceImpl implements GlobalCacheService {
     @Override
     public Map<Integer, ElementValues> offerInterview(UUID interviewId, RoomObserver room) {
         try {
+            // TODO переехать на sessionId
             offerInterviewLock.lock();
             if (!sessions.containsKey(interviewId)) {
                 sessions.put(interviewId, new HashMap<>());
@@ -61,8 +62,9 @@ public class TestGlobalCacheServiceImpl implements GlobalCacheService {
     }
 
     @Override
-    public void offerEvent(UUID interviewId, EventType type) {
+    public void offerEvent(UUID interviewId, UUID roomId, EventType type) {
         kafkaTemplate.send(topic, interviewId, new Message(
+                roomId,
                 type,
                 null,
                 null
@@ -75,11 +77,12 @@ public class TestGlobalCacheServiceImpl implements GlobalCacheService {
     }
 
     @Override
-    public void offerComponent(UUID interviewId, ElementValues value, boolean isChange) {
+    public void offerComponent(UUID interviewId, UUID roomId, ElementValues value, boolean isChange) {
         var elements = hazelcastInstance.getMap(interviewId.toString());
         elements.put(isChange ? elements.size() - 1 : elements.size(), value);
 
         kafkaTemplate.send(topic, interviewId, new Message(
+                roomId,
                 isChange ? EventType.CHANGE_LAST_COMPONENT : EventType.ADD_COMPONENT,
                 value,
                 null
@@ -103,7 +106,7 @@ public class TestGlobalCacheServiceImpl implements GlobalCacheService {
 //    }
 
     @Override
-    public void offerDiff(UUID interviewId, UUID elementId, Map<Integer, String> diffs) {
+    public void offerDiff(UUID interviewId, UUID roomId, UUID elementId, Map<Integer, String> diffs) {
         try {
             offerDiffLock.lock();
             var elements = hazelcastInstance.getMap(interviewId.toString());
@@ -114,6 +117,7 @@ public class TestGlobalCacheServiceImpl implements GlobalCacheService {
                     .map(es -> (ElementValues) es.getValue())
                     .findFirst();
             targetOptional.ifPresent(elementValues -> kafkaTemplate.send(topic, interviewId, new Message(
+                    roomId,
                     EventType.DO_DIFF,
                     elementValues,
                     diffs
