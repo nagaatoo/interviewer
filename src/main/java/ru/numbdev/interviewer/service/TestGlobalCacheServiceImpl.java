@@ -69,11 +69,6 @@ public class TestGlobalCacheServiceImpl implements GlobalCacheService {
                 null,
                 null
         ));
-//        observerRooms
-//                .entrySet()
-//                .stream()
-//                .filter(es -> es.getValue().getInterviewId().equals(interviewId))
-//                .forEach(es -> sessions.get(es.getKey()).access(() -> es.getValue().doAction(type, null)));
     }
 
     @Override
@@ -88,22 +83,6 @@ public class TestGlobalCacheServiceImpl implements GlobalCacheService {
                 null
         ));
     }
-
-//    @Override
-//    public void changeComponent(UUID interviewId, UUID oldElementId, ElementValues newComponentValue) {
-//        kafkaTemplate.send(topic, interviewId, new Message(
-//                EventType.CHANGE,
-//                newComponentValue,
-//                null,
-//                null
-//        ));
-//        var existsInterview = taskElements.get(interviewId);
-//        existsInterview
-//                .entrySet()
-//                .stream()
-//                .filter(es -> UUID.fromString(es.getValue().id()).equals(oldElementId))
-//                .forEach(es -> es.setValue(newComponentValue));
-//    }
 
     @Override
     public void offerDiff(UUID interviewId, UUID roomId, UUID elementId, Map<Integer, String> diffs) {
@@ -127,37 +106,6 @@ public class TestGlobalCacheServiceImpl implements GlobalCacheService {
         }
     }
 
-//    private ElementValues fillRows(Map<Integer, String> diffs, ElementValues values) {
-//        return new ElementValues(
-//                values.id(),
-//                values.type(),
-//                values.description(),
-//                buildResult(values.value(), diffs)
-//        );
-//    }
-//
-//    private String buildResult(String old, Map<Integer, String> diffs) {
-//        var seq = new AtomicInteger();
-//        var result = Arrays
-//                .stream(old.split(SPLIT))
-//                .collect(
-//                        Collectors.toConcurrentMap(
-//                                e -> seq.incrementAndGet(),
-//                                e -> e
-//                        )
-//                );
-//
-//        result.putAll(diffs);
-//        return buildString(result);
-//    }
-
-//    @Override
-//    public void addToObserve(ElementObserver element) {
-//        // Добавить интерфейс
-//        var component = (Component) element;
-//        observerElements.put(UUID.fromString(component.getId().get()), element);
-//    }
-
     // TODO может быть лаг между инициализации страницы, сборки кеша и получением diff
     // Возможно следует игнорировать события до окончания инициализации или что-то еще
     @KafkaListener(topics = "${spring.kafka.topic}")
@@ -178,35 +126,6 @@ public class TestGlobalCacheServiceImpl implements GlobalCacheService {
                     );
         }
     }
-
-//    @Scheduled(cron = "")
-//    public void doActionForComponents() {
-//        System.out.println("run doActionForComponents");
-//        // просто кидаем апдейты
-//        for (var es : observerElements.entrySet()) {
-//            var id = es.getKey();
-//            var element = es.getValue();
-//
-//            element.doAction(EventType.CHANGE, taskElements.get(id));
-//        }
-//    }
-
-//    @Scheduled(fixedDelay = 1000)
-//    public void doActionForInterviews() {
-//        System.out.println("run doAction");
-//        // просто кидаем апдейты
-//        for (var es : observerElements.entrySet()) {
-//            var id = es.getKey();
-//            var element = es.getValue();
-//
-//            element.doAction(EventType.CHANGE, new ElementValues(
-//                    id.toString(),
-//                    null,
-//                    null,
-//                    buildString(taskElements.get(id))
-//            ));
-//        }
-//    }
 
     private String buildString(Map<Integer, String> rows) {
         return rows
