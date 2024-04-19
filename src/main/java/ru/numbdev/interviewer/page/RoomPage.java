@@ -116,11 +116,10 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
         if (!SecurityUtil.isAnonymous()) {
             var startButton = new Button("Начать интервью");
             startButton.addClickListener(e -> {
-//                remove(startMain);
-//                buildInterviewPage();
+                remove(startMain);
+                buildInterviewPage();
 //                startInterview();
                 globalCacheService.offerEvent(roomEntity.getInterview().getId(), getIdAsUUID(), EventType.START_INTERVIEW);
-
             });
             startMain.add(startButton);
             startMain.setAlignSelf(Alignment.CENTER, startButton);

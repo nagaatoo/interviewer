@@ -18,18 +18,12 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class TestGlobalCacheServiceImpl implements GlobalCacheService {
 
-    private static final String SPLIT = "\r\n";
-
-    // Сессии. key - id интервью. Key - id комнаты
-    private static final Map<UUID, Map<UUID, VaadinSession>> sessions = new ConcurrentHashMap<>();
-    // Подключенные компоненты.
-    private static final Set<RoomObserver> observerRooms = new HashSet<>();
+    private static final Map<UUID, Map<VaadinSession, RoomObserver>> sessions = new ConcurrentHashMap<>();
 
     private static final Lock offerInterviewLock = new ReentrantLock();
     private static final Lock offerDiffLock = new ReentrantLock();
@@ -43,18 +37,18 @@ public class TestGlobalCacheServiceImpl implements GlobalCacheService {
     @Override
     public Map<Integer, ElementValues> offerInterview(UUID interviewId, RoomObserver room) {
         try {
-            // TODO переехать на sessionId
             offerInterviewLock.lock();
+            // Видимо, срабатывает для фоновых push - не регистрируем такие комнаты
+            if (UI.getCurrent() == null) {
+                return Map.copyOf(hazelcastInstance.getMap(interviewId.toString()));
+            }
+
             if (!sessions.containsKey(interviewId)) {
                 sessions.put(interviewId, new HashMap<>());
             }
+            var activeSessions = sessions.get(interviewId);
+            activeSessions.put(UI.getCurrent().getSession(), room);
 
-            if (UI.getCurrent() != null) {
-                var roomIdsWithSessions = sessions.get(interviewId);
-                roomIdsWithSessions.put(room.getIdAsUUID(), UI.getCurrent().getSession());
-            }
-
-            observerRooms.add(room);
             return Map.copyOf(hazelcastInstance.getMap(interviewId.toString()));
         } finally {
             offerInterviewLock.unlock();
@@ -112,26 +106,11 @@ public class TestGlobalCacheServiceImpl implements GlobalCacheService {
     private void listen(ConsumerRecord<UUID, Message> record) {
         var interviewId = record.key();
         var message = record.value();
-        var timestamp = record.timestamp();
 
         var sessionRooms = sessions.get(interviewId);
         if (sessionRooms != null) {
-            observerRooms
-                    .stream()
-                    .filter(e -> sessionRooms.containsKey(e.getIdAsUUID()))
-                    .forEach(e ->
-                            sessionRooms
-                                    .get(e.getIdAsUUID())
-                                    .access(() -> e.doAction(message))
-                    );
+            sessionRooms.forEach((session, room) -> session.access(() -> room.doAction(message)));
         }
-    }
-
-    private String buildString(Map<Integer, String> rows) {
-        return rows
-                .values()
-                .stream()
-                .collect(Collectors.joining(SPLIT));
     }
 
 }

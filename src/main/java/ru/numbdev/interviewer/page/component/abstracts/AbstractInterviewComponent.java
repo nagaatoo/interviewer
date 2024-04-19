@@ -171,6 +171,7 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
         components.add(component);
         currentTaskComponent.changeTask(component);
         currentIdx += 1;
+        addCacheToCurrentElement();
     }
 
     protected List<ElementValues> getInterviewResult() {
@@ -245,7 +246,6 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
     }
 
     private void registerListenerForEditor(CustomEditor editor) {
-//        editor.addValueChangeListener(e -> System.out.println("sadfasda"));
         editor.addAceChangedListener(e -> {
                     if (e.isFromClient() && globalCacheService != null) {
                         globalCacheService.offerDiff(
@@ -284,13 +284,5 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
                     }
                 }
         );
-    }
-
-    private Component getComponentById(UUID componentId) {
-        return components
-                .stream()
-                .filter(c -> c.getId().equals(componentId))
-                .findFirst()
-                .orElse(null);
     }
 }

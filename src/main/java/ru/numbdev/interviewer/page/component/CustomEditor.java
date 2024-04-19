@@ -1,7 +1,7 @@
 package ru.numbdev.interviewer.page.component;
 
 import de.f0rce.ace.AceEditor;
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 import ru.numbdev.interviewer.page.component.abstracts.EditableComponent;
 
 import java.util.AbstractMap;
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class CustomEditor extends AceEditor implements EditableComponent {
 
-    private static final String SPLIT = "\r\n";
+    private static final String SPLIT = "\n";
     private final Map<Integer, String> rows = new ConcurrentHashMap<>();
     private final Lock lock = new ReentrantLock();
 
@@ -25,14 +25,14 @@ public class CustomEditor extends AceEditor implements EditableComponent {
             lock.lock();
             var seq = new AtomicInteger();
             var actualRows = Arrays
-                    .stream(actualState.split("\r\n"))
+                    .stream(actualState.split("\n"))
                     .collect(
                             Collectors.toConcurrentMap(
                                     e -> seq.incrementAndGet(),
                                     e -> e
                             )
                     );
-            if (actualState.endsWith("\r\n")) {
+            if (actualState.endsWith("\n")) {
                 actualRows.put(actualRows.size() + 1, "");
             }
 
@@ -72,6 +72,10 @@ public class CustomEditor extends AceEditor implements EditableComponent {
 
     @Override
     public void offerDiff(Map<Integer, String> diff) {
+        if (CollectionUtils.isEmpty(diff)) {
+            return;
+        }
+
         try {
             lock.lock();
             saveResult(diff);
@@ -82,8 +86,7 @@ public class CustomEditor extends AceEditor implements EditableComponent {
     }
 
     private void saveResult(Map<Integer, String> diff) {
-        diff
-                .forEach((rowIdx, value) -> {
+        diff.forEach((rowIdx, value) -> {
                     if (value == null) {
                         rows.remove(rowIdx);
                     } else {
@@ -97,7 +100,7 @@ public class CustomEditor extends AceEditor implements EditableComponent {
         var currentCol = getCursorPosition().getColumn();
 
         setValue(String.join(SPLIT, rows.values()));
-        setCursorPosition(currentRow, currentCol, true);
+        setCursorPosition(currentRow, currentCol, false);
     }
 
 }
