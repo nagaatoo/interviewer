@@ -42,7 +42,7 @@ public class CustomEditor extends AceEditor implements EditableComponent {
                         .stream()
                         .filter(es -> {
                             var row = rows.get(es.getKey());
-                            return row == null || !es.getValue().equals(row);
+                            return !es.getValue().equals(row);
                         })
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
                 rows.putAll(diff);
