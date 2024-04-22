@@ -221,10 +221,6 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
 
     @Override
     public void doAction(Message message) {
-        if (message.roomId().equals(getIdAsUUID())) {
-            return;
-        }
-
         switch (message.event()) {
             case START_INTERVIEW -> doStart();
             case FINISH_INTERVIEW -> doFinish();

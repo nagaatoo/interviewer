@@ -109,7 +109,12 @@ public class TestGlobalCacheServiceImpl implements GlobalCacheService {
 
         var sessionRooms = sessions.get(interviewId);
         if (sessionRooms != null) {
-            sessionRooms.forEach((session, room) -> session.access(() -> room.doAction(message)));
+            sessionRooms
+                    .entrySet()
+                    .stream()
+                    .filter(es -> !es.getValue().getIdAsUUID().equals(message.roomId()))
+                    .forEach(es -> es.getKey().access(() -> es.getValue().doAction(message)));
+//            sessionRooms.forEach((session, room) -> session.access(() -> room.doAction(message)));
         }
     }
 
