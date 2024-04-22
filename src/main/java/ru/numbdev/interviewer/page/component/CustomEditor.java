@@ -72,7 +72,7 @@ public class CustomEditor extends AceEditor implements EditableComponent {
 
     @Override
     public void offerDiff(Map<Integer, String> diff) {
-        if (CollectionUtils.isEmpty(diff)) {
+        if (CollectionUtils.isEmpty(diff) || isNotDifferent(diff)) {
             return;
         }
 
@@ -83,6 +83,16 @@ public class CustomEditor extends AceEditor implements EditableComponent {
         } finally {
             lock.unlock();
         }
+    }
+
+    private boolean isNotDifferent(Map<Integer, String> diff) {
+        return diff
+                .entrySet()
+                .stream()
+                .noneMatch(es -> {
+                    var row = rows.get(es.getKey());
+                    return row != null && !row.equals(es.getValue());
+                });
     }
 
     private void saveResult(Map<Integer, String> diff) {
