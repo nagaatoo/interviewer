@@ -1,6 +1,7 @@
 package ru.numbdev.interviewer.page.component;
 
 import de.f0rce.ace.AceEditor;
+import io.micrometer.common.util.StringUtils;
 import org.springframework.util.CollectionUtils;
 import ru.numbdev.interviewer.page.component.abstracts.EditableComponent;
 
@@ -16,11 +17,19 @@ import java.util.stream.Collectors;
 public class CustomEditor extends AceEditor implements EditableComponent {
 
     private static final String SPLIT = "\n";
+    private static final String NULL_ROW_TAG = "#<NULL_STR>#";
     private final Map<Integer, String> rows = new ConcurrentHashMap<>();
     private final Lock lock = new ReentrantLock();
 
+    // Есть 2 бага, к которым не вижу решение для Ace Editor:
+    // 1) При достаточно быстром наборе текста лок не успевает за корректкой (слетает)
+    // 2) Ace Editor генерирует событие из клиента с пустым значением перед или после ввода. Решение - игнорируем полную отчистку (костыль)
     @Override
     public Map<Integer, String> getDiff(String actualState) {
+        if (StringUtils.isEmpty(actualState)) {
+            return Map.of();
+        }
+
         try {
             lock.lock();
             var seq = new AtomicInteger();
@@ -48,6 +57,12 @@ public class CustomEditor extends AceEditor implements EditableComponent {
                 rows.putAll(diff);
                 return diff;
             } else {
+                var emptyDiff = rows
+                        .keySet()
+                        .stream()
+                        .filter(s -> !actualRows.containsKey(s))
+                        .collect(Collectors.toMap(s -> s, s -> NULL_ROW_TAG));
+
                 var diff = rows
                         .entrySet()
                         .stream()
@@ -57,12 +72,21 @@ public class CustomEditor extends AceEditor implements EditableComponent {
                         })
                         .map(es -> {
                             var row = actualRows.get(es.getKey());
+
                             return row == null
-                                    ? new AbstractMap.SimpleEntry<Integer, String>(es.getKey(), null)
-                                    : es;
+                                    ? new AbstractMap.SimpleEntry<Integer, String>(es.getKey(), NULL_ROW_TAG)
+                                    : new AbstractMap.SimpleEntry<>(es.getKey(), actualRows.get(es.getKey()));
                         })
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-                rows.putAll(diff);
+
+                diff.putAll(emptyDiff);
+                diff.forEach((key, value) -> {
+                    if (NULL_ROW_TAG.equals(value)) {
+                        rows.remove(key);
+                    } else {
+                        rows.put(key, value);
+                    }
+                });
                 return diff;
             }
         } finally {
@@ -97,18 +121,19 @@ public class CustomEditor extends AceEditor implements EditableComponent {
 
     private void saveResult(Map<Integer, String> diff) {
         diff.forEach((rowIdx, value) -> {
-                    if (value == null) {
-                        rows.remove(rowIdx);
-                    } else {
-                        rows.put(rowIdx, value);
-                    }
-                });
+            if (NULL_ROW_TAG.equals(value)) {
+                rows.remove(rowIdx);
+            } else {
+                rows.put(rowIdx, value);
+            }
+        });
     }
 
     private void addToComponent() {
         var currentRow = getCursorPosition().getRow();
         var currentCol = getCursorPosition().getColumn();
 
+        onEnabledStateChanged(true);
         setValue(String.join(SPLIT, rows.values()));
         setCursorPosition(currentRow, currentCol, false);
     }
