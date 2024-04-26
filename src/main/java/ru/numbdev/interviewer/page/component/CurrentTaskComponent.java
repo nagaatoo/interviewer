@@ -5,9 +5,11 @@ import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import lombok.Getter;
 
 public class CurrentTaskComponent extends VerticalLayout {
 
+    @Getter
     private Component current;
 
     public CurrentTaskComponent(String initMessage) {

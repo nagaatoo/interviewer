@@ -9,4 +9,5 @@ public interface CustomComponent {
     default UUID getIdAsUUID() {
         return UUID.fromString(((Component) this).getId().get());
     }
+    void setReadOnlyMode();
 }

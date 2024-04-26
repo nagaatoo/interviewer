@@ -138,4 +138,8 @@ public class CustomEditor extends AceEditor implements EditableComponent {
         setCursorPosition(currentRow, currentCol, false);
     }
 
+    @Override
+    public void setReadOnlyMode() {
+        setReadOnly(true);
+    }
 }

@@ -16,4 +16,9 @@ public class CustomRadioButtonsGroup extends RadioButtonGroup<String> implements
     public void offerDiff(Map<Integer, String> diff) {
         setValue(diff.get(1));
     }
+
+    @Override
+    public void setReadOnlyMode() {
+        setReadOnly(true);
+    }
 }

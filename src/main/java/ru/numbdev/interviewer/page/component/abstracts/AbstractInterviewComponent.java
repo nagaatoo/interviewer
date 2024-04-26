@@ -11,6 +11,7 @@ import lombok.Getter;
 import org.springframework.util.CollectionUtils;
 import ru.numbdev.interviewer.dto.ElementValues;
 import ru.numbdev.interviewer.enums.EventType;
+import ru.numbdev.interviewer.enums.InterviewComponentInitType;
 import ru.numbdev.interviewer.page.component.CurrentTaskComponent;
 import ru.numbdev.interviewer.page.component.CustomEditor;
 import ru.numbdev.interviewer.page.component.CustomRadioButtonsGroup;
@@ -31,9 +32,11 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
     @Getter
     private int currentIdx = 0;
 
+    protected InterviewComponentInitType type;
+
     private UUID interviewerId;
     private UUID roomId;
-    private GlobalCacheService globalCacheService;
+    protected GlobalCacheService globalCacheService;
 
     public void enableCacheOperations(UUID interviewId, UUID roomId, GlobalCacheService globalCacheService) {
         this.globalCacheService = globalCacheService;
@@ -41,21 +44,33 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
         this.roomId = roomId;
     }
 
-    protected void initCurrentOnly(String msg) {
+    public void init(InterviewComponentInitType type) {
+        var msg = "Тут скоро что-то будет";
+
+        switch (type) {
+            case FULL -> initFull(msg);
+            case CURRENT_ONLY -> initCurrentOnly(msg);
+            case READ_FULL_ONLY -> initReadOnly();
+        }
+    }
+
+    private void initCurrentOnly(String msg) {
+        this.type = InterviewComponentInitType.CURRENT_ONLY;
         currentTaskComponent = new CurrentTaskComponent(msg);
         add(currentTaskComponent);
         setAlignSelf(Alignment.CENTER, currentTaskComponent);
         currentTaskComponent.setSizeFull();
     }
 
-    protected void initFull(String msg) {
+    private void initFull(String msg) {
+        this.type = InterviewComponentInitType.FULL;
         currentTaskComponent = new CurrentTaskComponent(msg);
         currentTaskComponent.setSizeFull();
 
         var endInterviewButton = new Button("Завершить интервью");
         endInterviewButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
         endInterviewButton.addClickListener(e -> finish());
-        initControlButtons();
+        initControlButtons(true);
 
         if (components.isEmpty()) {
             nextButton.setEnabled(false);
@@ -75,12 +90,13 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
         ruleLayout.setSizeFull();
     }
 
-    protected void initReadOnly() {
+    private void initReadOnly() {
+        this.type = InterviewComponentInitType.READ_FULL_ONLY;
         currentTaskComponent = new CurrentTaskComponent("");
         currentTaskComponent.setSizeFull();
 
         var buttonLayout = new HorizontalLayout();
-        initControlButtons();
+        initControlButtons(false);
         buttonLayout.add(previewButton, nextButton);
 
         var ruleLayout = new VerticalLayout();
@@ -93,7 +109,11 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
         ruleLayout.setSizeFull();
     }
 
-    private void initControlButtons() {
+    private void initControlButtons(boolean withCache) {
+        if (previewButton != null || nextButton != null) {
+            return;
+        }
+
         previewButton = new Button(new Icon(VaadinIcon.ARROW_LEFT));
         nextButton = new Button(new Icon(VaadinIcon.ARROW_RIGHT));
         nextButton.addClickListener(e -> {
@@ -105,7 +125,7 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
                 nextButton.setEnabled(false);
             }
 
-            if (globalCacheService != null) {
+            if (globalCacheService != null && withCache) {
                 globalCacheService.offerEvent(interviewerId, roomId, EventType.NEXT_COMPONENT);
             }
         });
@@ -122,7 +142,7 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
             }
 
 
-            if (globalCacheService != null) {
+            if (globalCacheService != null && withCache) {
                 globalCacheService.offerEvent(interviewerId, roomId, EventType.PREVIOUS_COMPONENT);
             }
         });
@@ -131,6 +151,43 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
             nextButton.setEnabled(false);
             previewButton.setEnabled(false);
         }
+    }
+
+    public void closeInterview() {
+        if (globalCacheService != null) {
+            if (type == InterviewComponentInitType.FULL) {
+                globalCacheService.offerEvent(interviewerId, roomId, EventType.FINISH_INTERVIEW);
+            }
+
+
+            globalCacheService.endInterview(interviewerId, roomId);
+            globalCacheService = null;
+        }
+
+        removeAll();
+        setReadOnlyComponents();
+
+        var buttonLayout = new HorizontalLayout();
+        initControlButtons(false);
+        currentIdx = 0;
+        currentTaskComponent.changeTask(components.getFirst());
+        previewButton.setEnabled(false);
+        nextButton.setEnabled(true);
+
+        buttonLayout.add(previewButton, nextButton);
+
+        var ruleLayout = new VerticalLayout();
+        ruleLayout.add(currentTaskComponent);
+        ruleLayout.add(buttonLayout);
+        ruleLayout.setAlignSelf(Alignment.END, buttonLayout);
+
+        add(ruleLayout);
+        setAlignSelf(Alignment.CENTER, ruleLayout);
+        ruleLayout.setSizeFull();
+    }
+
+    private void setReadOnlyComponents() {
+        components.forEach(c -> ((CustomComponent) c).setReadOnlyMode());
     }
 
     public void offerDiff(UUID elementId, Map<Integer, String> diff) {
@@ -142,8 +199,6 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
     }
 
     protected abstract void finish();
-
-    public abstract boolean isInterviewer();
 
     public void setData(Map<Integer, ElementValues> data) {
         if (CollectionUtils.isEmpty(data)) {
@@ -161,7 +216,7 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
         currentIdx = components.size() <= 1 ? 0 : components.size() - 1;
         currentTaskComponent.changeTask(components.get(currentIdx));
 
-        if (isInterviewer()) {
+        if (type == InterviewComponentInitType.FULL) {
             previewButton.setEnabled(true);
         }
     }
@@ -219,7 +274,7 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
     }
 
     public void doNext() {
-        if (isInterviewer()) {
+        if (type == InterviewComponentInitType.FULL) {
             nextButton.click();
         } else {
             currentIdx += 1;
@@ -228,7 +283,7 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
     }
 
     public void doPreview() {
-        if (isInterviewer()) {
+        if (type == InterviewComponentInitType.FULL) {
             previewButton.click();
         } else {
             currentIdx -= 1;

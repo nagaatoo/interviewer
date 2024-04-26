@@ -15,6 +15,7 @@ import ru.numbdev.interviewer.component.RoomObserver;
 import ru.numbdev.interviewer.dto.ElementValues;
 import ru.numbdev.interviewer.dto.Message;
 import ru.numbdev.interviewer.enums.EventType;
+import ru.numbdev.interviewer.enums.InterviewComponentInitType;
 import ru.numbdev.interviewer.jpa.entity.RoomEntity;
 import ru.numbdev.interviewer.page.component.InterviewComponent;
 import ru.numbdev.interviewer.page.component.QuestionComponent;
@@ -78,7 +79,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
 
     private void buildReadPage() {
         buildTitle();
-        buildMain(true);
+        buildReadOnlyMain();
 
         add(title);
         add(main);
@@ -86,7 +87,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
 
     private void buildInterviewPage() {
         buildTitle();
-        buildMain(false);
+        buildMain();
 
         add(title);
         buildSplit();
@@ -96,7 +97,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
 
     private void buildCandidatePage() {
         buildTitle();
-        buildMain(false);
+        buildMain();
 
         add(title);
         add(main);
@@ -118,7 +119,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
             startButton.addClickListener(e -> {
                 remove(startMain);
                 buildInterviewPage();
-//                startInterview();
+                startInterview();
                 globalCacheService.offerEvent(roomEntity.getInterview().getId(), getIdAsUUID(), EventType.START_INTERVIEW);
             });
             startMain.add(startButton);
@@ -149,13 +150,15 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
         title.add(new Text(roomEntity.getInterview().getName()));
     }
 
-    private void buildMain(boolean isReadOnly) {
+    private void buildMain() {
         main = context.getBean(InterviewComponent.class);
-        main.init(isInterviewer, isReadOnly);
+        main.init(isInterviewer ? InterviewComponentInitType.FULL : InterviewComponentInitType.CURRENT_ONLY);
+        main.enableCacheOperations(getInterviewId(), getIdAsUUID(), globalCacheService);
+    }
 
-        if (!isReadOnly) {
-            main.enableCacheOperations(getInterviewId(), getIdAsUUID(), globalCacheService);
-        }
+    private void buildReadOnlyMain() {
+        main = context.getBean(InterviewComponent.class);
+        main.init(InterviewComponentInitType.READ_FULL_ONLY);
     }
 
     private void buildSplit() {
@@ -264,7 +267,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
     }
 
     private void doFinish() {
-
+        main.closeInterview();
     }
 
     private void doDiff(Message message) {
@@ -276,4 +279,8 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
         return roomEntity.getInterview().getId();
     }
 
+    @Override
+    public void setReadOnlyMode() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

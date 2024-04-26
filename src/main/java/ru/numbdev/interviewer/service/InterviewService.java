@@ -58,7 +58,7 @@ public class InterviewService {
 
     @Transactional
     public void finishInterview(List<ElementValues> values) {
-
+        System.out.println("sdf");
     }
 
     @Transactional

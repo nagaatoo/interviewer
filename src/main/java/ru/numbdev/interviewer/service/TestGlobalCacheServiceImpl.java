@@ -44,7 +44,7 @@ public class TestGlobalCacheServiceImpl implements GlobalCacheService {
             }
 
             if (!sessions.containsKey(interviewId)) {
-                sessions.put(interviewId, new HashMap<>());
+                sessions.put(interviewId, new ConcurrentHashMap<>());
             }
             var activeSessions = sessions.get(interviewId);
             activeSessions.put(UI.getCurrent().getSession(), room);
@@ -53,6 +53,22 @@ public class TestGlobalCacheServiceImpl implements GlobalCacheService {
         } finally {
             offerInterviewLock.unlock();
         }
+    }
+
+    @Override
+    public void endInterview(UUID interviewId, UUID roomId) {
+        var rooms = sessions.get(interviewId);
+        if (rooms.isEmpty()) {
+            sessions.remove(interviewId);
+            return;
+        }
+
+        rooms
+                .entrySet()
+                .stream()
+                .filter(es -> es.getValue().getIdAsUUID().equals(roomId))
+                .findFirst()
+                .ifPresent(es -> rooms.remove(es.getKey()));
     }
 
     @Override
@@ -101,7 +117,6 @@ public class TestGlobalCacheServiceImpl implements GlobalCacheService {
     }
 
     // TODO может быть лаг между инициализации страницы, сборки кеша и получением diff
-    // Возможно следует игнорировать события до окончания инициализации или что-то еще
     @KafkaListener(topics = "${spring.kafka.topic}")
     private void listen(ConsumerRecord<UUID, Message> record) {
         var interviewId = record.key();
@@ -114,7 +129,6 @@ public class TestGlobalCacheServiceImpl implements GlobalCacheService {
                     .stream()
                     .filter(es -> !es.getValue().getIdAsUUID().equals(message.roomId()))
                     .forEach(es -> es.getKey().access(() -> es.getValue().doAction(message)));
-//            sessionRooms.forEach((session, room) -> session.access(() -> room.doAction(message)));
         }
     }
 

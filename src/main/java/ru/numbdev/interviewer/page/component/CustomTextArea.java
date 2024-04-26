@@ -16,4 +16,9 @@ public class CustomTextArea extends TextArea implements EditableComponent {
     public void offerDiff(Map<Integer, String> diff) {
         setValue(diff.get(1));
     }
+
+    @Override
+    public void setReadOnlyMode() {
+        setReadOnly(true);
+    }
 }
