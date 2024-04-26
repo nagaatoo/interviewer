@@ -82,7 +82,7 @@ public abstract class AbstractBuilderListComponent extends AbstractBuilderCompon
     private void saveValueFromRadioButton(BuilderItemEntity entity, Component component) {
         var radioButtonGroup = (CustomRadioButtonsGroup) component;
         entity.setElementDescription(radioButtonGroup.getLabel());
-        entity.setElementValue(parseValueFromRadioButton(entity.getElementValue(), radioButtonGroup.getValue()));
+        entity.setElementValue(radioButtonGroup.parseValueFromRadioButton());
     }
 
     private void saveValueFromTextArea(BuilderItemEntity entity, Component component) {

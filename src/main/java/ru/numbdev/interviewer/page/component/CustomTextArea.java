@@ -7,6 +7,12 @@ import java.util.Map;
 
 public class CustomTextArea extends TextArea implements EditableComponent {
 
+    public CustomTextArea(String id, String description, String value) {
+        setId(id);
+        setLabel(description);
+        offerDiff(Map.of(1, value));
+    }
+
     @Override
     public Map<Integer, String> getDiff(String actualState) {
         return Map.of(1, actualState);

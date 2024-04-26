@@ -91,6 +91,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
 
         add(title);
         buildSplit();
+        setSizeFull();
 
         offerInterview();
     }

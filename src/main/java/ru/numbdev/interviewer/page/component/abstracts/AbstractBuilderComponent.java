@@ -7,13 +7,10 @@ import de.f0rce.ace.enums.AceMode;
 import de.f0rce.ace.enums.AceTheme;
 import org.apache.commons.lang3.StringUtils;
 import ru.numbdev.interviewer.dto.ElementValues;
-import ru.numbdev.interviewer.dto.KeyValueRadioButton;
 import ru.numbdev.interviewer.jpa.entity.ElementType;
 import ru.numbdev.interviewer.page.component.CustomEditor;
 import ru.numbdev.interviewer.page.component.CustomRadioButtonsGroup;
 import ru.numbdev.interviewer.page.component.CustomTextArea;
-
-import java.util.Arrays;
 
 public abstract class AbstractBuilderComponent extends VerticalLayout {
 
@@ -40,7 +37,7 @@ public abstract class AbstractBuilderComponent extends VerticalLayout {
                 rb.getId().get(),
                 ElementType.QUESTION,
                 rb.getLabel(),
-                parseValueFromRadioButton(null, rb.getValue())
+                rb.parseValueFromRadioButton()
         );
     }
 
@@ -66,63 +63,14 @@ public abstract class AbstractBuilderComponent extends VerticalLayout {
     }
 
     protected Component buildTextField(String id, String description, String value) {
-        var area = new CustomTextArea();
-        area.setId(id);
-        area.setLabel(description);
-        area.setValue(value);
-
-        return area;
+        return new CustomTextArea(id, description, value);
     }
 
     protected Component buildRadioButton(String id, String description, String value) {
-        var parsedValue = parseRadioButtonFromValue(value);
-        var radioButtonGroup = new CustomRadioButtonsGroup();
-        radioButtonGroup.setId(id);
-        radioButtonGroup.addThemeVariants(RadioGroupVariant.LUMO_VERTICAL);
-        radioButtonGroup.setLabel(description);
-        radioButtonGroup.setItems(parsedValue.getValues());
-        radioButtonGroup.setValue(parsedValue.getSelected());
-
-        return radioButtonGroup;
-    }
-
-    // Формат: Foo, Boo, #Coo#, Doo
-    private KeyValueRadioButton parseRadioButtonFromValue(String value) {
-        var builder = KeyValueRadioButton.builder();
-        if (StringUtils.isBlank(value)) {
-            return builder.build();
-        }
-
-        var parts = value.split(",");
-        builder.values(
-                Arrays
-                        .stream(parts)
-                        .peek(v -> {
-                            if (v.contains("#")) {
-                                builder.selected(v);
-                            }
-                        })
-                        .toList()
-        );
-
-        return builder.build();
-    }
-
-    protected String parseValueFromRadioButton(String items, String selected) {
-        if (StringUtils.isBlank(selected)) {
-            return items.replace("#", "");
-        }
-
-        return items.replace(selected, "#" + selected + "#");
+        return new CustomRadioButtonsGroup(id, description, value);
     }
 
     private Component buildCode(String id, String value) {
-        var ace = new CustomEditor();
-        ace.setId(id);
-        ace.setTheme(AceTheme.github);
-        ace.setMode(AceMode.java);
-        ace.setValue(value);
-
-        return ace;
+        return new CustomEditor(id, value);
     }
 }

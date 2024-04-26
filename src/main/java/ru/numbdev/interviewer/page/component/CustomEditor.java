@@ -1,6 +1,8 @@
 package ru.numbdev.interviewer.page.component;
 
 import de.f0rce.ace.AceEditor;
+import de.f0rce.ace.enums.AceMode;
+import de.f0rce.ace.enums.AceTheme;
 import io.micrometer.common.util.StringUtils;
 import org.springframework.util.CollectionUtils;
 import ru.numbdev.interviewer.page.component.abstracts.EditableComponent;
@@ -20,6 +22,24 @@ public class CustomEditor extends AceEditor implements EditableComponent {
     private static final String NULL_ROW_TAG = "#<NULL_STR>#";
     private final Map<Integer, String> rows = new ConcurrentHashMap<>();
     private final Lock lock = new ReentrantLock();
+
+    public CustomEditor(String id, String value) {
+        setId(id);
+        var seq = new AtomicInteger();
+        var init = Arrays
+                .stream(value.split("\n"))
+                .collect(
+                        Collectors.toConcurrentMap(
+                                e -> seq.incrementAndGet(),
+                                e -> e
+                        )
+                );
+
+        rows.putAll(init);
+        setValue(value);
+        setTheme(AceTheme.github);
+        setMode(AceMode.java);
+    }
 
     // Есть 2 бага, к которым не вижу решение для Ace Editor:
     // 1) При достаточно быстром наборе текста лок не успевает за корректкой (слетает)
@@ -133,7 +153,6 @@ public class CustomEditor extends AceEditor implements EditableComponent {
         var currentRow = getCursorPosition().getRow();
         var currentCol = getCursorPosition().getColumn();
 
-        onEnabledStateChanged(true);
         setValue(String.join(SPLIT, rows.values()));
         setCursorPosition(currentRow, currentCol, false);
     }
