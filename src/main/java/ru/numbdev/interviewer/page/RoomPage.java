@@ -70,15 +70,33 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
         var interview = roomEntity.getInterview();
         isInterviewer = interview.getInterviewerLogin().equals(SecurityUtil.getUserName());
 
+        // ИНтервью завершено
         if (interview.getFinishedDate() != null) {
-            buildReadPage();
-        } else if (!interview.getStarted()) {
+            if (isInterviewer) {
+                buildReviewPage();
+            } else {
+                buildReadPage();
+            }
+        }
+
+        // Интервью не начато
+        else if (!interview.getStarted()) {
             buildStartPage();
-        } else if (isInterviewer){
+        }
+
+        // Иинтервью начато
+        else if (isInterviewer){
             buildInterviewPage();
         } else {
             buildCandidatePage();
         }
+    }
+
+    private void buildReviewPage() {
+        buildReadOnlyMain();
+        buildReviewSplit();
+
+        setSizeFull();
     }
 
     private void buildReadPage() {
@@ -87,7 +105,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
 
         add(title);
         add(main);
-//        main.setSizeFull();
+
         setSizeFull();
     }
 
@@ -96,7 +114,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
         buildMain();
 
         add(title);
-        buildSplit();
+        buildInterviewSplit();
         setSizeFull();
 
         offerInterview();
@@ -170,7 +188,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
         main.setReadOnlyComponents();
     }
 
-    private void buildSplit() {
+    private void buildInterviewSplit() {
         var questionEntity = roomEntity.getInterview().getQuestionnaire();
         var templateEntity = roomEntity.getInterview().getTemplate();
 
@@ -229,6 +247,27 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
         splitLayout.setSizeFull();
         splitLayout.addThemeVariants(SplitLayoutVariant.LUMO_SMALL);
         add(splitLayout);
+    }
+
+    private void buildReviewSplit() {
+//        var questionEntity = roomEntity.getInterview().getQuestionnaire();
+//
+//        var splitLayout = new SplitLayout();
+//        var interviewerSplit = new SplitLayout();
+//        interviewerSplit.setOrientation(SplitLayout.Orientation.VERTICAL);
+//
+//        if (questionEntity != null) {
+//            questionComponent = context.getBean(QuestionComponent.class);
+//            questionComponent.init(false, questionEntity.getId());
+//            interviewerSplit.addToSecondary(questionComponent);
+//        }
+//
+//        main.setMaxWidth("85%");
+//        splitLayout.addToPrimary(main);
+//        splitLayout.addToSecondary(interviewerSplit);
+//        splitLayout.setSizeFull();
+//        splitLayout.addThemeVariants(SplitLayoutVariant.LUMO_SMALL);
+//        add(splitLayout);
     }
 
     @Override
