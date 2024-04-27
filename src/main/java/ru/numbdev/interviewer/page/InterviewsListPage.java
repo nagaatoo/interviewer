@@ -8,13 +8,13 @@ import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteParam;
-import com.vaadin.flow.router.RouteParameters;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Value;
 import ru.numbdev.interviewer.jpa.entity.InterviewEntity;
 import ru.numbdev.interviewer.page.component.abstracts.AbstractListPage;
 import ru.numbdev.interviewer.service.crud.InterviewCrudService;
+
+import java.text.MessageFormat;
 
 @Route(value = "/interviews", layout = MainPage.class)
 @PageTitle("Интервью")
@@ -22,7 +22,10 @@ import ru.numbdev.interviewer.service.crud.InterviewCrudService;
 public class InterviewsListPage extends AbstractListPage<InterviewEntity> {
 
     @Value("${server.port}")
-    private int port;
+    private String port;
+
+    @Value("${server.domain-name}")
+    private String domainName;
 
     private final InterviewCrudService interviewCrudService;
 
@@ -34,7 +37,7 @@ public class InterviewsListPage extends AbstractListPage<InterviewEntity> {
         addColumn(InterviewEntity::getName, "Название");
         addColumn(InterviewEntity::getSolution, "Решение");
         addColumn(InterviewEntity::getInterviewerLogin, "Интервьювер");
-        addColumn(e -> "http://localhost:" + port + "/room/" + e.getId(), "Ссылка");
+        addColumn(e -> MessageFormat.format("http://{0}:{1}/room/{2}", domainName, port, e.getRoom().getId()), "Ссылка");
     }
 
     @Override
@@ -68,8 +71,9 @@ public class InterviewsListPage extends AbstractListPage<InterviewEntity> {
 
     @Override
     protected ComponentEventListener<ItemDoubleClickEvent<InterviewEntity>> chooseElement() {
-        return e -> UI.getCurrent().navigate(RoomPage.class, new RouteParameters(
-                new RouteParam("identifier", e.getItem().getRoom().getId().toString())
-        ));
+        return e -> {
+            var url =  MessageFormat.format("http://{0}:{1}/room/{2}", domainName, port, e.getItem().getRoom().getId().toString());
+            UI.getCurrent().getPage().open(url);
+        };
     }
 }

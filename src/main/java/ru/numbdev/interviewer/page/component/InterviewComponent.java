@@ -19,7 +19,7 @@ public class InterviewComponent extends AbstractInterviewComponent {
 
     @Override
     protected void finish() {
-        interviewService.finishInterview(getInterviewResult());
+        interviewService.finishInterview(getInterviewerId(), getInterviewResult());
         closeInterview();
 //        if (type == InterviewComponentInitType.FULL) {
 ////            UI.getCurrent().navigate(InterviewsListPage.class);

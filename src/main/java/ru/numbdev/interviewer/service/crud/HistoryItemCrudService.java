@@ -5,6 +5,9 @@ import org.springframework.stereotype.Service;
 import ru.numbdev.interviewer.jpa.entity.HistoryBuilderItemEntity;
 import ru.numbdev.interviewer.jpa.repository.HistoryBuilderItemRepository;
 
+import java.util.List;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class HistoryItemCrudService {
@@ -15,4 +18,7 @@ public class HistoryItemCrudService {
         return repository.save(entity);
     }
 
+    public List<HistoryBuilderItemEntity> findByInterviewerId(UUID interviewerId) {
+        return repository.findByInterviewId(interviewerId);
+    }
 }

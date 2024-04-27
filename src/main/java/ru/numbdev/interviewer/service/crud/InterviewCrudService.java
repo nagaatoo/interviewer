@@ -27,6 +27,7 @@ public class InterviewCrudService {
     public InterviewEntity getById(UUID id) {
         return interviewRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Interview not found " + id));
     }
+
     public long getSize(int page, int size, String quickSearch) {
         return interviewRepository.findAll(
                 InterviewSpecification.getInterview(quickSearch, SecurityUtil.getUserName()),

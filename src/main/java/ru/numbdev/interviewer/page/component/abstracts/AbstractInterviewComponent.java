@@ -3,6 +3,7 @@ package ru.numbdev.interviewer.page.component.abstracts;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -34,6 +35,7 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
 
     protected InterviewComponentInitType type;
 
+    @Getter
     private UUID interviewerId;
     private UUID roomId;
     protected GlobalCacheService globalCacheService;
@@ -107,6 +109,7 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
         add(ruleLayout);
         setAlignSelf(Alignment.CENTER, ruleLayout);
         ruleLayout.setSizeFull();
+        setSizeFull();
     }
 
     private void initControlButtons(boolean withCache) {
@@ -176,9 +179,12 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
 
         buttonLayout.add(previewButton, nextButton);
 
+        var label = new Span("Интервью завершено");
         var ruleLayout = new VerticalLayout();
+        ruleLayout.add(label);
         ruleLayout.add(currentTaskComponent);
         ruleLayout.add(buttonLayout);
+        ruleLayout.setAlignSelf(Alignment.CENTER, label);
         ruleLayout.setAlignSelf(Alignment.END, buttonLayout);
 
         add(ruleLayout);
@@ -186,7 +192,7 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
         ruleLayout.setSizeFull();
     }
 
-    private void setReadOnlyComponents() {
+    public void setReadOnlyComponents() {
         components.forEach(c -> ((CustomComponent) c).setReadOnlyMode());
     }
 
@@ -213,10 +219,15 @@ public abstract class AbstractInterviewComponent extends AbstractBuilderComponen
                 .map(es -> buildElement(es.getValue()))
                 .forEach(components::add);
 
-        currentIdx = components.size() <= 1 ? 0 : components.size() - 1;
-        currentTaskComponent.changeTask(components.get(currentIdx));
+        if (type == InterviewComponentInitType.READ_FULL_ONLY) {
+            currentIdx = 0;
+            currentTaskComponent.changeTask(components.get(currentIdx));
+            previewButton.setEnabled(false);
+            nextButton.setEnabled(true);
+        } else if (type == InterviewComponentInitType.FULL) {
+            currentIdx = components.size() <= 1 ? 0 : components.size() - 1;
+            currentTaskComponent.changeTask(components.get(currentIdx));
 
-        if (type == InterviewComponentInitType.FULL) {
             previewButton.setEnabled(true);
         }
     }

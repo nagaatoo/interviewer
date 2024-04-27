@@ -6,10 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.numbdev.interviewer.dto.ElementValues;
 import ru.numbdev.interviewer.jpa.entity.InterviewEntity;
 import ru.numbdev.interviewer.jpa.entity.RoomEntity;
-import ru.numbdev.interviewer.service.crud.InterviewCrudService;
-import ru.numbdev.interviewer.service.crud.QuestionsCrudService;
-import ru.numbdev.interviewer.service.crud.RoomCrudService;
-import ru.numbdev.interviewer.service.crud.TemplateCrudService;
+import ru.numbdev.interviewer.service.crud.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,6 +17,7 @@ import java.util.UUID;
 public class InterviewService {
 
     private final InterviewCrudService interviewCrudService;
+    private final HistoryService buildItemService;
     private final RoomCrudService roomCrudService;
     private final QuestionsCrudService questionsCrudService;
     private final TemplateCrudService templateCrudService;
@@ -57,8 +55,14 @@ public class InterviewService {
     }
 
     @Transactional
-    public void finishInterview(List<ElementValues> values) {
-        System.out.println("sdf");
+    public void finishInterview(UUID interviewId, List<ElementValues> values) {
+        var entity = interviewCrudService.getById(interviewId);
+        buildItemService.saveInterviewResult(entity, values);
+        interviewCrudService.save(
+                entity
+                        .setFinishedDate(LocalDateTime.now())
+                        .setStarted(false)
+        );
     }
 
     @Transactional

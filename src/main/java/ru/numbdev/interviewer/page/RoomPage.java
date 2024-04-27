@@ -20,6 +20,7 @@ import ru.numbdev.interviewer.jpa.entity.RoomEntity;
 import ru.numbdev.interviewer.page.component.InterviewComponent;
 import ru.numbdev.interviewer.page.component.QuestionComponent;
 import ru.numbdev.interviewer.page.component.TemplateComponent;
+import ru.numbdev.interviewer.service.HistoryService;
 import ru.numbdev.interviewer.service.GlobalCacheService;
 import ru.numbdev.interviewer.service.InterviewService;
 import ru.numbdev.interviewer.service.crud.RoomCrudService;
@@ -37,6 +38,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
 
     private final RoomCrudService roomCrudService;
     private final InterviewService interviewService;
+    private final HistoryService historyService;
     private final GlobalCacheService globalCacheService;
     private final ApplicationContext context;
 
@@ -48,9 +50,11 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
     private VerticalLayout startMain;
 
     public RoomPage(RoomCrudService roomCrudService, InterviewService interviewService,
-                    GlobalCacheService globalCacheService, ApplicationContext context) {
+                    HistoryService historyService, GlobalCacheService globalCacheService,
+                    ApplicationContext context) {
         this.roomCrudService = roomCrudService;
         this.interviewService = interviewService;
+        this.historyService = historyService;
         this.globalCacheService = globalCacheService;
         this.context = context;
         setId(UUID.randomUUID().toString());
@@ -83,6 +87,8 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
 
         add(title);
         add(main);
+//        main.setSizeFull();
+        setSizeFull();
     }
 
     private void buildInterviewPage() {
@@ -160,6 +166,8 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
     private void buildReadOnlyMain() {
         main = context.getBean(InterviewComponent.class);
         main.init(InterviewComponentInitType.READ_FULL_ONLY);
+        main.setData(historyService.getInterviewResult(getInterviewId()));
+        main.setReadOnlyComponents();
     }
 
     private void buildSplit() {
