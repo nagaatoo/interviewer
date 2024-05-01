@@ -75,6 +75,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
         var interview = roomEntity.getInterview();
         isInterviewer = interview.getInterviewerLogin().equals(SecurityUtil.getUserName());
 
+        // TODO режим просмотра сохраненного решения
         // Интервью завершено
         if (interview.getFinishedDate() != null) {
             if (isInterviewer) {
