@@ -12,7 +12,6 @@ import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 import ru.numbdev.interviewer.component.RoomObserver;
 import ru.numbdev.interviewer.dto.ElementValues;
