@@ -10,12 +10,16 @@ import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayoutVariant;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import de.f0rce.ace.AceEditor;
+import de.f0rce.ace.enums.AceMode;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 import ru.numbdev.interviewer.component.RoomObserver;
 import ru.numbdev.interviewer.dto.ElementValues;
 import ru.numbdev.interviewer.dto.Message;
 import ru.numbdev.interviewer.enums.EventType;
 import ru.numbdev.interviewer.enums.InterviewComponentInitType;
+import ru.numbdev.interviewer.enums.QuestionComponentType;
 import ru.numbdev.interviewer.jpa.entity.RoomEntity;
 import ru.numbdev.interviewer.page.component.InterviewComponent;
 import ru.numbdev.interviewer.page.component.QuestionComponent;
@@ -26,6 +30,7 @@ import ru.numbdev.interviewer.service.InterviewService;
 import ru.numbdev.interviewer.service.crud.RoomCrudService;
 import ru.numbdev.interviewer.utils.SecurityUtil;
 
+import java.util.List;
 import java.util.UUID;
 
 @Route("/room/:identifier")
@@ -70,7 +75,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
         var interview = roomEntity.getInterview();
         isInterviewer = interview.getInterviewerLogin().equals(SecurityUtil.getUserName());
 
-        // ИНтервью завершено
+        // Интервью завершено
         if (interview.getFinishedDate() != null) {
             if (isInterviewer) {
                 buildReviewPage();
@@ -237,7 +242,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
 
         if (questionEntity != null) {
             questionComponent = context.getBean(QuestionComponent.class);
-            questionComponent.init(false, questionEntity.getId());
+            questionComponent.init(QuestionComponentType.INTERVIEW, questionEntity.getId());
             interviewerSplit.addToSecondary(questionComponent);
         }
 
@@ -250,24 +255,48 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
     }
 
     private void buildReviewSplit() {
-//        var questionEntity = roomEntity.getInterview().getQuestionnaire();
-//
-//        var splitLayout = new SplitLayout();
-//        var interviewerSplit = new SplitLayout();
-//        interviewerSplit.setOrientation(SplitLayout.Orientation.VERTICAL);
-//
-//        if (questionEntity != null) {
-//            questionComponent = context.getBean(QuestionComponent.class);
-//            questionComponent.init(false, questionEntity.getId());
-//            interviewerSplit.addToSecondary(questionComponent);
-//        }
-//
-//        main.setMaxWidth("85%");
-//        splitLayout.addToPrimary(main);
-//        splitLayout.addToSecondary(interviewerSplit);
-//        splitLayout.setSizeFull();
-//        splitLayout.addThemeVariants(SplitLayoutVariant.LUMO_SMALL);
-//        add(splitLayout);
+        var questionEntity = roomEntity.getInterview().getQuestionnaire();
+
+        var horizontalLayout = new SplitLayout();
+        horizontalLayout.setOrientation(SplitLayout.Orientation.HORIZONTAL);
+        var interviewerSplit = new SplitLayout();
+        interviewerSplit.setOrientation(SplitLayout.Orientation.VERTICAL);
+        interviewerSplit.addToPrimary(main);
+
+        if (questionEntity != null) {
+            questionComponent = context.getBean(QuestionComponent.class);
+            questionComponent.init(QuestionComponentType.REVIEW, questionEntity.getId());
+            interviewerSplit.addToSecondary(questionComponent);
+        }
+
+        var reviewEditor = new AceEditor();
+        reviewEditor.setMode(AceMode.text);
+        reviewEditor.setSizeFull();
+        reviewEditor.setShowGutter(false);
+
+        horizontalLayout.addToPrimary(interviewerSplit);
+        horizontalLayout.addToSecondary(reviewEditor);
+        interviewerSplit.setWidth("50%");
+        reviewEditor.setWidth("50%");
+
+        horizontalLayout.setSizeFull();
+        horizontalLayout.addThemeVariants(SplitLayoutVariant.LUMO_SMALL);
+
+        var saveButton = new Button("Сохранить");
+        saveButton.addClickListener(e ->
+                interviewService.saveResultReview(
+                        getInterviewId(),
+                        reviewEditor.getValue(),
+                        questionComponent != null ? questionComponent.getAnswers() : List.of()
+                        )
+        );
+
+        var reviewLayout = new VerticalLayout();
+        reviewLayout.add(horizontalLayout);
+        reviewLayout.add(saveButton);
+        reviewLayout.setSizeFull();
+
+        add(reviewLayout);
     }
 
     @Override

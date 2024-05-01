@@ -5,6 +5,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.context.ApplicationContext;
+import ru.numbdev.interviewer.enums.QuestionComponentType;
 import ru.numbdev.interviewer.page.component.QuestionComponent;
 
 @Route(value = "/question/create", layout = MainPage.class)
@@ -16,7 +17,7 @@ public class QuestionCreatePage extends VerticalLayout {
 
     public QuestionCreatePage(ApplicationContext context) {
         questionComponent = context.getBean(QuestionComponent.class);
-        questionComponent.init(true, null);
+        questionComponent.init(QuestionComponentType.EDITABLE, null);
 
         setSizeFull();
         add(questionComponent);

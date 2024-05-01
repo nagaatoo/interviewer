@@ -1,6 +1,7 @@
 package ru.numbdev.interviewer.page.component;
 
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.ItemDoubleClickEvent;
 import com.vaadin.flow.component.textfield.TextField;
@@ -11,10 +12,13 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.numbdev.interviewer.dto.ElementValues;
 import ru.numbdev.interviewer.enums.BuilderType;
+import ru.numbdev.interviewer.enums.QuestionComponentType;
 import ru.numbdev.interviewer.jpa.entity.QuestionnaireEntity;
 import ru.numbdev.interviewer.page.component.abstracts.AbstractBuilderListComponent;
 import ru.numbdev.interviewer.service.crud.QuestionsCrudService;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -22,17 +26,19 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class QuestionComponent extends AbstractBuilderListComponent {
 
+    private QuestionComponentType type;
+
     private final QuestionsCrudService questionsCrudService;
 
-    private boolean isEditable;
     private QuestionnaireEntity questionnaire;
 
     private final TextField questionnaireName = new TextField();
     private final Grid<com.vaadin.flow.component.Component> tasks = new Grid<>(
             com.vaadin.flow.component.Component.class, false);
 
-    public void init(boolean isEditable, UUID questionnaireId) {
-        this.isEditable = isEditable;
+    public void init(QuestionComponentType type, UUID questionnaireId) {
+        this.type = type;
+
         if (questionnaireId != null) {
             super.init(questionnaireId);
             questionnaire = questionsCrudService.findById(questionnaireId);
@@ -40,6 +46,14 @@ public class QuestionComponent extends AbstractBuilderListComponent {
             questionnaire = questionsCrudService.save(new QuestionnaireEntity());
         }
 
+        switch (type) {
+            case EDITABLE -> buildEditable();
+            case INTERVIEW -> buildInterview();
+            case REVIEW -> buildReview();
+        }
+    }
+
+    private void buildEditable() {
         questionnaireName.setPlaceholder("Название опросника");
         questionnaireName.setValue(
                 StringUtils.isNotBlank(questionnaire.getName())
@@ -54,22 +68,31 @@ public class QuestionComponent extends AbstractBuilderListComponent {
 
         add(questionnaireName);
         add(tasks);
-        if (isEditable) {
-            add(initEditPanel(e -> addAction()));
-        }
-        buildRows();
+        add(initEditPanel(e -> addAction()));
+
+        buildDataProvider();
+        tasks.addItemDoubleClickListener(chooseElement());
+
+        setSizeFull();
+    }
+
+    private void buildInterview() {
+        add(tasks);
+        buildDataProvider();
+
+        setSizeFull();
+    }
+
+    private void buildReview() {
+        tasks.setSelectionMode(Grid.SelectionMode.NONE);
+        add(tasks);
+        buildDataProvider();
+
         setSizeFull();
     }
 
     private void addAction() {
         add(new CreateElementDialogComponent(getSaveAction(), getRemoveAction()));
-    }
-
-    private void buildRows() {
-        buildDataProvider();
-        if (isEditable) {
-            tasks.addItemDoubleClickListener(chooseElement());
-        }
     }
 
     private ComponentEventListener<ItemDoubleClickEvent<com.vaadin.flow.component.Component>> chooseElement() {
@@ -109,10 +132,9 @@ public class QuestionComponent extends AbstractBuilderListComponent {
 
     private void refresh() {
         tasks.setItems(
-                getElements()
-                        .stream()
-                        .peek(this::muteElement)
-                        .toList()
+                type == QuestionComponentType.INTERVIEW
+                        ? getElements().stream().peek(this::setSizeFullToElement).peek(this::muteElement).toList()
+                        : getElements().stream().peek(this::setSizeFullToElement).toList()
         );
     }
 
@@ -129,6 +151,21 @@ public class QuestionComponent extends AbstractBuilderListComponent {
         if (component instanceof CustomEditor ee) {
             ee.setReadOnly(true);
         }
+    }
+
+    private void setSizeFullToElement(com.vaadin.flow.component.Component element) {
+        var typed = (HasSize) element;
+        typed.setSizeFull();
+    }
+
+    public List<ElementValues> getAnswers() {
+        List<ElementValues> answers = new ArrayList<>();
+        for(int i = 0; i<tasks.getDataCommunicator().getDataProviderSize(); i++) {
+            var element = tasks.getDataCommunicator().getItem(i);
+            answers.add(buildValueFromComponent(element));
+        }
+
+        return answers;
     }
 
     @Override

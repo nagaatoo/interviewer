@@ -61,7 +61,8 @@ create table if not exists history_builder_items
     element_description text,
     element_value       text, -- значение зависит от типа и обрабатывается кодом
     element_order       integer      not null,
-    interview_id        uuid references interviews (id)
+    interview_id        uuid references interviews (id),
+    questionnaire_id    uuid references questionnaires (id)
 );
 
 create table if not exists edit_lock

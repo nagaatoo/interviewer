@@ -2,10 +2,6 @@ package ru.numbdev.interviewer.page.component.abstracts;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.radiobutton.RadioGroupVariant;
-import de.f0rce.ace.enums.AceMode;
-import de.f0rce.ace.enums.AceTheme;
-import org.apache.commons.lang3.StringUtils;
 import ru.numbdev.interviewer.dto.ElementValues;
 import ru.numbdev.interviewer.jpa.entity.ElementType;
 import ru.numbdev.interviewer.page.component.CustomEditor;

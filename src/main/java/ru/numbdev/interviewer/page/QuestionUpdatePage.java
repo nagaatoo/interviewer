@@ -8,6 +8,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.context.ApplicationContext;
+import ru.numbdev.interviewer.enums.QuestionComponentType;
 import ru.numbdev.interviewer.page.component.QuestionComponent;
 
 import java.util.UUID;
@@ -26,7 +27,7 @@ public class QuestionUpdatePage extends HorizontalLayout implements BeforeEnterO
 
     private void initTemplateUpdatePage(UUID questionId) {
         questionComponent = context.getBean(QuestionComponent.class);
-        questionComponent.init(true, questionId);
+        questionComponent.init(QuestionComponentType.EDITABLE, questionId);
 
         setSizeFull();
         add(questionComponent);

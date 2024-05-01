@@ -2,6 +2,7 @@ package ru.numbdev.interviewer.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.numbdev.interviewer.dto.ElementValues;
 import ru.numbdev.interviewer.jpa.entity.HistoryBuilderItemEntity;
 import ru.numbdev.interviewer.jpa.entity.InterviewEntity;
@@ -18,6 +19,7 @@ public class HistoryService {
 
     private final HistoryItemCrudService historyItemCrudService;
 
+    @Transactional
     public void saveInterviewResult(InterviewEntity interview, List<ElementValues> values) {
         int count = 0;
         for (var value : values) {
@@ -54,5 +56,16 @@ public class HistoryService {
                 .setElementType(v.type())
                 .setElementValue(v.value())
                 .setElementDescription(v.description());
+    }
+
+    @Transactional
+    public void saveAnswersForQuestions(InterviewEntity interviewEntity, List<ElementValues> values) {
+        int count = 0;
+        for (var value : values) {
+            var history = historyItemCrudService.save(toDto(interviewEntity, value, count));
+            history.setQuestionnaire(interviewEntity.getQuestionnaire());
+            historyItemCrudService.save(history);
+            count += 1;
+        }
     }
 }

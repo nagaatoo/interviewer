@@ -29,4 +29,8 @@ public class HistoryBuilderItemEntity {
     @JoinColumn(name = "interview_id")
     private InterviewEntity interview;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "questionnaire_id")
+    private QuestionnaireEntity questionnaire;
+
 }

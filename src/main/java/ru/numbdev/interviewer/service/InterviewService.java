@@ -21,6 +21,7 @@ public class InterviewService {
     private final RoomCrudService roomCrudService;
     private final QuestionsCrudService questionsCrudService;
     private final TemplateCrudService templateCrudService;
+    private final HistoryService historyService;
 
     @Transactional
     public String createInterview(
@@ -69,5 +70,14 @@ public class InterviewService {
     public void startInterview(UUID id) {
         var interview = interviewCrudService.getById(id);
         interviewCrudService.save(interview.setStarted(true));
+    }
+
+    @Transactional
+    public void saveResultReview(UUID interviewId, String result, List<ElementValues> questionValues) {
+        var interviewEntity = interviewCrudService.getById(interviewId);
+        interviewEntity.setSolution(result);
+
+        historyService.saveAnswersForQuestions(interviewEntity, questionValues);
+        interviewCrudService.save(interviewEntity);
     }
 }
