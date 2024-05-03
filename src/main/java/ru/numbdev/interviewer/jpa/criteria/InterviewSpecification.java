@@ -3,6 +3,7 @@ package ru.numbdev.interviewer.jpa.criteria;
 import jakarta.persistence.criteria.Predicate;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.provider.HibernateUtils;
 import ru.numbdev.interviewer.jpa.entity.InterviewEntity;
 
 import java.util.ArrayList;
@@ -14,12 +15,9 @@ public class InterviewSpecification {
         return (interview, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-//            interview.fetch("template", JoinType.LEFT);
-//            interview.fetch("questionnaire", JoinType.LEFT);
-//            interview.fetch("room", JoinType.LEFT);
             if (StringUtils.isNotBlank(quick)) {
-                var namePredicate = cb.like(cb.lower(interview.get("name")), quick.toLowerCase());
-                var solutionPredicate = cb.like(cb.lower(interview.get("solution")), quick.toLowerCase());
+                var namePredicate = cb.like(cb.lower(interview.get("name")), "%" + quick.toLowerCase() + "%");
+                var solutionPredicate = cb.like(cb.lower(interview.get("solution")), "%" + quick.toLowerCase() + "%");
                 predicates.add(cb.or(namePredicate, solutionPredicate));
             }
 

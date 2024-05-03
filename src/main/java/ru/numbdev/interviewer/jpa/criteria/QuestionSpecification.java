@@ -14,8 +14,8 @@ public class QuestionSpecification {
             List<Predicate> predicates = new ArrayList<>();
 
             if (StringUtils.isNotBlank(quickSearch)) {
-                var namePredicate = cb.like(cb.lower(question.get("name")), quickSearch.toLowerCase());
-                var descriptionPredicate = cb.like(cb.lower(question.get("description")), quickSearch.toLowerCase());
+                var namePredicate = cb.like(cb.lower(question.get("name")), "%" + quickSearch.toLowerCase() + "%");
+                var descriptionPredicate = cb.like(cb.lower(question.get("description")), "%" + quickSearch.toLowerCase() + "%");
                 predicates.add(cb.or(namePredicate, descriptionPredicate));
             }
 

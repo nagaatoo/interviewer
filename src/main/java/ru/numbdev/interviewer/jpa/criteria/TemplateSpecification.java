@@ -15,7 +15,7 @@ public class TemplateSpecification {
             List<Predicate> predicates = new ArrayList<>();
 
             if (StringUtils.isNotBlank(quickSearch)) {
-                predicates.add(cb.like(cb.lower(template.get("name")), quickSearch.toLowerCase()));
+                predicates.add(cb.like(cb.lower(template.get("name")), "%" + quickSearch.toLowerCase() + "%"));
             }
 
             if (StringUtils.isNotBlank(owner)) {
