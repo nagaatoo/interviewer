@@ -21,7 +21,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 @RequiredArgsConstructor
-public class TestGlobalCacheServiceImpl implements GlobalCacheService {
+public class GlobalCacheServiceImpl implements GlobalCacheService {
 
     private static final Map<UUID, Map<VaadinSession, RoomObserver>> sessions = new ConcurrentHashMap<>();
 
