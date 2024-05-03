@@ -53,21 +53,26 @@ public class CustomRadioButtonsGroup extends RadioButtonGroup<String> implements
                         .stream(parts)
                         .peek(v -> {
                             if (v.contains("#")) {
-                                builder.selected(v);
+                                builder.selected(cleanTags(v));
                             }
                         })
+                        .map(this::cleanTags)
                         .toList()
         );
 
         return builder.build();
     }
 
-    public String parseValueFromRadioButton() { //String items, String selected
+    public String parseValueFromRadioButton() {
         var selected = getValue();
         if (StringUtils.isBlank(selected)) {
-            return items.replace("#", "");
+            return cleanTags(items);
         }
 
         return items.replace(selected, "#" + selected + "#");
+    }
+
+    private String cleanTags(String str) {
+        return str.replace("#", "");
     }
 }

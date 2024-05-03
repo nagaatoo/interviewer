@@ -1,5 +1,6 @@
 package ru.numbdev.interviewer.service.crud;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.numbdev.interviewer.jpa.entity.BuilderItemEntity;
@@ -13,6 +14,12 @@ import java.util.UUID;
 public class BuilderItemCrudService {
 
     private final BuilderItemRepository builderItemRepository;
+
+    public BuilderItemEntity getById(UUID id) {
+        return builderItemRepository
+                .findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Builder Item with id " + id + " not found"));
+    }
 
     public List<BuilderItemEntity> getItemsForQuestionnaire(UUID questionnaireId) {
         return builderItemRepository.findItemsForQuestionnaire(questionnaireId);
@@ -28,6 +35,10 @@ public class BuilderItemCrudService {
 
     public void delete(BuilderItemEntity entity) {
         builderItemRepository.deleteById(entity.getId());
+    }
+
+    public void deleteById(UUID id) {
+        builderItemRepository.deleteById(id);
     }
 
     public void saveItems(List<BuilderItemEntity> items) {

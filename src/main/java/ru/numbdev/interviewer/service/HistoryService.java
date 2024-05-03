@@ -1,6 +1,7 @@
 package ru.numbdev.interviewer.service;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.numbdev.interviewer.dto.ElementValues;
@@ -23,7 +24,7 @@ public class HistoryService {
     public void saveInterviewResult(InterviewEntity interview, List<ElementValues> values) {
         int count = 0;
         for (var value : values) {
-            historyItemCrudService.save(toDto(interview, value, count));
+            historyItemCrudService.save(toHistoryEntity(interview, value, count));
             count += 1;
         }
     }
@@ -49,8 +50,9 @@ public class HistoryService {
         );
     }
 
-    private HistoryBuilderItemEntity toDto(InterviewEntity interview, ElementValues v, int count) {
+    private HistoryBuilderItemEntity toHistoryEntity(InterviewEntity interview, ElementValues v, int count) {
         return new HistoryBuilderItemEntity()
+                .setId(StringUtils.isNotBlank(v.id()) ? UUID.fromString(v.id()) : null)
                 .setInterview(interview)
                 .setElementOrder(count)
                 .setElementType(v.type())
@@ -62,10 +64,18 @@ public class HistoryService {
     public void saveAnswersForQuestions(InterviewEntity interviewEntity, List<ElementValues> values) {
         int count = 0;
         for (var value : values) {
-            var history = historyItemCrudService.save(toDto(interviewEntity, value, count));
+            var history = historyItemCrudService.save(toHistoryEntity(interviewEntity, value, count));
             history.setQuestionnaire(interviewEntity.getQuestionnaire());
             historyItemCrudService.save(history);
             count += 1;
         }
+    }
+
+    public List<ElementValues> getAnswersFromQuestions(UUID interviewId, UUID questionnaireId) {
+        return historyItemCrudService
+                .findByInterviewerIdAndQuestionnaireId(interviewId, questionnaireId)
+                .stream()
+                .map(this::entityToDto)
+                .toList();
     }
 }

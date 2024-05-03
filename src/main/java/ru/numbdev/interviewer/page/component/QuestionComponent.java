@@ -53,6 +53,14 @@ public class QuestionComponent extends AbstractBuilderListComponent {
         }
     }
 
+    public void initReview(UUID interviewId, UUID questionnaireId) {
+        this.type = QuestionComponentType.REVIEW;
+        super.initAsHistory(interviewId, questionnaireId);
+        questionnaire = questionsCrudService.findById(questionnaireId);
+
+        buildReview();
+    }
+
     private void buildEditable() {
         questionnaireName.setPlaceholder("Название опросника");
         questionnaireName.setValue(

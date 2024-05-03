@@ -12,7 +12,6 @@ import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import de.f0rce.ace.AceEditor;
 import de.f0rce.ace.enums.AceMode;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 import ru.numbdev.interviewer.component.RoomObserver;
 import ru.numbdev.interviewer.dto.ElementValues;
@@ -34,7 +33,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Route("/room/:identifier")
-@PageTitle("Room")
+@PageTitle("Комната с интервью")
 @AnonymousAllowed
 public class RoomPage extends VerticalLayout implements BeforeEnterObserver, RoomObserver {
 
@@ -75,7 +74,6 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
         var interview = roomEntity.getInterview();
         isInterviewer = interview.getInterviewerLogin().equals(SecurityUtil.getUserName());
 
-        // TODO режим просмотра сохраненного решения
         // Интервью завершено
         if (interview.getFinishedDate() != null) {
             if (isInterviewer) {
@@ -90,7 +88,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
             buildStartPage();
         }
 
-        // Иинтервью начато
+        // Интервью начато
         else if (isInterviewer){
             buildInterviewPage();
         } else {
@@ -266,7 +264,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
 
         if (questionEntity != null) {
             questionComponent = context.getBean(QuestionComponent.class);
-            questionComponent.init(QuestionComponentType.REVIEW, questionEntity.getId());
+            questionComponent.initReview(getInterviewId(), questionEntity.getId());
             interviewerSplit.addToSecondary(questionComponent);
         }
 
@@ -274,6 +272,7 @@ public class RoomPage extends VerticalLayout implements BeforeEnterObserver, Roo
         reviewEditor.setMode(AceMode.text);
         reviewEditor.setSizeFull();
         reviewEditor.setShowGutter(false);
+        reviewEditor.setValue(roomEntity.getInterview().getSolution());
 
         horizontalLayout.addToPrimary(interviewerSplit);
         horizontalLayout.addToSecondary(reviewEditor);
