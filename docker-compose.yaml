@@ -68,4 +68,3 @@ services:
       KEYCLOAK_EXTRA_ARGS: --import-realm
     volumes:
       - ./infrastructure/keycloak/realms:/opt/bitnami/keycloak/data/import
-      -
